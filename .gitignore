@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+coverage/
+
+# Testing & Playwright
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Environment & Local files
+.env
+.env.*
+*.local
+
+# Editor & OS
+.DS_Store
+Thumbs.db
+
+# Prompt specification (keep local only, do not stage/commit)
+PROMPT.md

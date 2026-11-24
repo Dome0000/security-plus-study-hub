@@ -1,0 +1,52 @@
+/* Print Stylesheet for clean Lesson Reader printing */
+
+@media print {
+  * {
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+
+  .app-sidebar,
+  .sidebar-backdrop,
+  .app-header,
+  .app-footer,
+  .lesson-toc,
+  .lesson-nav-actions,
+  .no-print,
+  .skip-link,
+  .alert {
+    display: none !important;
+  }
+
+  .app-main-column {
+    margin-left: 0 !important;
+  }
+
+  .app-main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .lesson-layout {
+    display: block !important;
+  }
+
+  .prose-text {
+    max-width: none !important;
+    line-height: 1.65 !important;
+  }
+
+  .card,
+  .card-subtle,
+  .table-scroll {
+    border: 1px solid #999999 !important;
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}

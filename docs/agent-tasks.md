@@ -1,0 +1,36 @@
+# Multi-Agent Task Register & Ownership (`SY0-701`)
+
+กติกาหลัก:
+- ทุก agent ใช้เอกสารกลางชุดเดียวกัน (`docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/*`)
+- ห้ามหลาย agent แก้ไฟล์เดียวกันพร้อมกัน (กำหนด Allowed Output Files แยกชัดเจน)
+- ห้าม Sub-agent push, deploy หรือเข้าถึง secrets
+- ห้ามเปลี่ยน exam version (`SY0-701`), schema หรือ dependencies เอง
+
+---
+
+## Task Board
+
+| Task ID | บทบาท (Subagent Type) | เป้าหมาย | Input Files | Allowed Output Files | ข้อห้าม | Acceptance Criteria & Verification |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `T-FE-01` | `frontend-engineer` | สร้าง UI ครบ 9 หน้า + 5 accessible PBQ templates + CSS/a11y + Global Search ด้วย isolated fixture | `src/types/*`, `src/engine/*`, `src/storage/*`, `src/__fixtures__/*`, `src/data/examMeta.ts` | `src/styles/*`, `src/components/**`, `src/pages/**`, `src/context/*`, `src/App.tsx`, `src/main.tsx` | ห้ามแก้ไข `src/types/`, `src/engine/`, `src/storage/`, `PROMPT.md`, ห้ามใช้ CDN/raw HTML/CompTIA logo | Build ผ่าน, Lint 0 errors (รวม jsx-a11y), Typecheck ผ่าน, ครบ 9 หน้าและ 5 PBQ templates |
+| `T-CUR-01` | `curriculum-author` | เขียนบทเรียน Domain 1 (`L1-01`..`L1-06`, 6 บท) ครบ 13 ส่วน | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d1-lessons.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดจำนวนหัวข้อ/knowledgeChecks | `LessonSchema` ผ่านทุกบท, ครบ objectives `1.1–1.4` |
+| `T-CUR-02` | `curriculum-author` | เขียนบทเรียน Domain 2 ชุดที่ 1 (`L2-01`..`L2-05`, 5 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d2-batch1.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `2.1–2.3` |
+| `T-CUR-03` | `curriculum-author` | เขียนบทเรียน Domain 2 ชุดที่ 2 (`L2-06`..`L2-09`, 4 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d2-batch2.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `2.4–2.5` |
+| `T-CUR-04` | `curriculum-author` | เขียนบทเรียน Domain 3 ชุดที่ 1 (`L3-01`..`L3-04`, 4 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d3-batch1.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `3.1–3.2` |
+| `T-CUR-05` | `curriculum-author` | เขียนบทเรียน Domain 3 ชุดที่ 2 (`L3-05`..`L3-08`, 4 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d3-batch2.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `3.3–3.4` |
+| `T-CUR-06` | `curriculum-author` | เขียนบทเรียน Domain 4 ชุดที่ 1 (`L4-01`..`L4-06`, 6 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d4-batch1.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `4.1–4.5` |
+| `T-CUR-07` | `curriculum-author` | เขียนบทเรียน Domain 4 ชุดที่ 2 (`L4-07`..`L4-12`, 6 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d4-batch2.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `4.5–4.9` |
+| `T-CUR-08` | `curriculum-author` | เขียนบทเรียน Domain 5 (`L5-01`..`L5-07`, 7 บท) | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/lesson.ts` | `src/data/lessons/d5-lessons.ts` | ห้ามแก้ไขไฟล์อื่นหรือลดหัวข้อ | `LessonSchema` ผ่านทุกบท, ครบ `5.1–5.6` |
+| `T-CUR-09` | `curriculum-author` | สร้าง Glossary + Acronyms + Conceptual Flashcards + 30-Day Study Plan | `docs/exam-blueprint.md`, `docs/content-coverage.md`, `src/types/glossary.ts` | `src/data/glossary.ts`, `src/data/studyPlan.ts` | ห้ามแก้ไขไฟล์บทเรียนหรือ engine | `GlossaryEntrySchema`, `FlashcardSchema`, `StudyPlanDaySchema` (30 วัน) ผ่าน 100% |
+| `T-Q-01` | `question-author` | สร้างข้อสอบ Domain 1 (`Q1-001`..`Q1-036`, 36 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d1.ts` | ห้ามใช้ exam dumps/คำใบ้ในคำแปลไทย | `QuestionSchema` ผ่านทุกข้อ, `1.1–1.4` ครบ, MSQ ~25% |
+| `T-Q-02` | `question-author` | สร้างข้อสอบ Domain 2 ชุดที่ 1 (`Q2-001`..`Q2-033`, 33 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d2-b1.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `2.1–2.3` |
+| `T-Q-03` | `question-author` | สร้างข้อสอบ Domain 2 ชุดที่ 2 (`Q2-034`..`Q2-066`, 33 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d2-b2.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `2.3–2.5` |
+| `T-Q-04` | `question-author` | สร้างข้อสอบ Domain 3 ชุดที่ 1 (`Q3-001`..`Q3-027`, 27 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d3-b1.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `3.1–3.2` |
+| `T-Q-05` | `question-author` | สร้างข้อสอบ Domain 3 ชุดที่ 2 (`Q3-028`..`Q3-054`, 27 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d3-b2.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `3.3–3.4` |
+| `T-Q-06` | `question-author` | สร้างข้อสอบ Domain 4 ชุดที่ 1 (`Q4-001`..`Q4-028`, 28 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d4-b1.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `4.1–4.3` |
+| `T-Q-07` | `question-author` | สร้างข้อสอบ Domain 4 ชุดที่ 2 (`Q4-029`..`Q4-056`, 28 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d4-b2.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `4.4–4.6` |
+| `T-Q-08` | `question-author` | สร้างข้อสอบ Domain 4 ชุดที่ 3 (`Q4-057`..`Q4-084`, 28 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d4-b3.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `4.7–4.9` |
+| `T-Q-09` | `question-author` | สร้างข้อสอบ Domain 5 ชุดที่ 1 (`Q5-001`..`Q5-030`, 30 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d5-b1.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `5.1–5.3` |
+| `T-Q-10` | `question-author` | สร้างข้อสอบ Domain 5 ชุดที่ 2 (`Q5-031`..`Q5-060`, 30 ข้อ) | `docs/exam-blueprint.md`, `src/types/question.ts`, `docs/content-coverage.md` | `src/data/questions/q-d5-b2.ts` | ห้ามซ้ำ scenario หรือมี placeholder | `QuestionSchema` ผ่าน, ครบ `5.4–5.6` |
+| `T-PBQ-01` | `question-author` | สร้าง 15 Interactive PBQs (3 ข้อ/Domain) ครบ 5 templates + rubric | `docs/exam-blueprint.md`, `src/types/pbq.ts`, `src/engine/scoring.ts` | `src/data/pbqs/pbq-d1.ts`..`pbq-d5.ts` | ห้ามทำ PBQ ที่ตรวจคะแนนไม่ได้จริง | `PbqQuestionSchema` ผ่าน 15 ข้อ, `scorePbq` คิด partial credit 0–1 ได้จริง |
+| `T-QA-01..03` | `qa-reviewer` | ตรวจทานเนื้อหา เฉลย ความกำกวม คำแปลไทย ความตรง objective และ PBQ rubric (แยกผู้ตรวจจากผู้เขียน) | `docs/exam-blueprint.md`, `src/data/**` | อ่านอย่างเดียว (ส่งรายงานพร้อม file path, item ID, เหตุผล, หลักฐานให้ Main Agent) | ห้ามแก้ไฟล์เองโดยตรง | ตรวจครบทุก domain และบันทึกผลใน `docs/content-review.md` |

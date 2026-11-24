@@ -1,0 +1,167 @@
+/* Design tokens for Security+ Study Hub (SY0-701)
+   WCAG 2.2 AA contrast targets, Light & Dark theme variables, Thai-friendly typography */
+
+:root {
+  /* Typography */
+  --font-sans: 'Noto Sans Thai', 'Sarabun', 'Leelawadee UI', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Courier New', monospace;
+
+  --text-xs: 0.78rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  --leading-tight: 1.35;
+  --leading-normal: 1.6;
+  --leading-prose: 1.78;
+
+  /* Light Theme Palette */
+  --bg-canvas: #f3f6fa;
+  --bg-surface: #ffffff;
+  --bg-subtle: #eaf0f6;
+  --bg-elevated: #ffffff;
+  --bg-code: #0f172a;
+  --text-code: #e2e8f0;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+
+  --border-subtle: #cbd5e1;
+  --border-strong: #94a3b8;
+
+  --accent-primary: #0f4c81;
+  --accent-primary-hover: #0a3861;
+  --accent-on-primary: #ffffff;
+  --accent-soft: #e0ecf8;
+  --accent-soft-text: #0a3861;
+
+  --focus-ring: #0284c7;
+
+  /* Semantic Status (always paired with icons + text) */
+  --status-success-bg: #ecfdf5;
+  --status-success-border: #059669;
+  --status-success-text: #065f46;
+
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #d97706;
+  --status-warning-text: #92400e;
+
+  --status-danger-bg: #fef2f2;
+  --status-danger-border: #dc2626;
+  --status-danger-text: #991b1b;
+
+  --status-info-bg: #eff6ff;
+  --status-info-border: #2563eb;
+  --status-info-text: #1e40af;
+
+  /* Domain Colors */
+  --d1-bg: #e0ecf8;
+  --d1-text: #0a3861;
+  --d1-border: #93c5fd;
+
+  --d2-bg: #ffedd5;
+  --d2-text: #9a3412;
+  --d2-border: #fdba74;
+
+  --d3-bg: #ccfbf1;
+  --d3-text: #115e59;
+  --d3-border: #5eead4;
+
+  --d4-bg: #e0e7ff;
+  --d4-text: #3730a3;
+  --d4-border: #a5b4fc;
+
+  --d5-bg: #f3e8ff;
+  --d5-text: #6b21a8;
+  --d5-border: #d8b4fe;
+
+  /* Layout & Radii & Shadows */
+  --sidebar-width: 268px;
+  --header-height: 64px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 14px 32px rgba(15, 23, 42, 0.16);
+
+  --transition-fast: 140ms ease;
+}
+
+html[data-theme='dark'] {
+  --bg-canvas: #0b1120;
+  --bg-surface: #111827;
+  --bg-subtle: #1e293b;
+  --bg-elevated: #172033;
+  --bg-code: #060b14;
+  --text-code: #e2e8f0;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --border-subtle: #334155;
+  --border-strong: #475569;
+
+  --accent-primary: #38bdf8;
+  --accent-primary-hover: #7dd3fc;
+  --accent-on-primary: #082f49;
+  --accent-soft: #0c2d48;
+  --accent-soft-text: #bae6fd;
+
+  --focus-ring: #7dd3fc;
+
+  --status-success-bg: #052e16;
+  --status-success-border: #22c55e;
+  --status-success-text: #86efac;
+
+  --status-warning-bg: #451a03;
+  --status-warning-border: #f59e0b;
+  --status-warning-text: #fde68a;
+
+  --status-danger-bg: #450a0a;
+  --status-danger-border: #f87171;
+  --status-danger-text: #fecaca;
+
+  --status-info-bg: #172554;
+  --status-info-border: #60a5fa;
+  --status-info-text: #bfdbfe;
+
+  --d1-bg: #0c2d48;
+  --d1-text: #bae6fd;
+  --d1-border: #0369a1;
+
+  --d2-bg: #431407;
+  --d2-text: #fed7aa;
+  --d2-border: #c2410c;
+
+  --d3-bg: #042f2e;
+  --d3-text: #99f6e4;
+  --d3-border: #0f766e;
+
+  --d4-bg: #1e1b4b;
+  --d4-text: #c7d2fe;
+  --d4-border: #4338ca;
+
+  --d5-bg: #2e1065;
+  --d5-text: #e9d5ff;
+  --d5-border: #7e22ce;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.65);
+}
+
+html[data-font-size='large'] {
+  --text-xs: 0.85rem;
+  --text-sm: 0.95rem;
+  --text-base: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.65rem;
+  --text-3xl: 2.05rem;
+}
