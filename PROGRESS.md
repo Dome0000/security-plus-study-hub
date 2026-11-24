@@ -110,3 +110,21 @@
 
 ### สิ่งที่ยังค้าง & Next Action
 - **Next Action (Phase 8):** เพิ่ม `.github/workflows/deploy.yml`, ตรวจ pre-commit security & `.gitignore`, สร้าง repository `Dome0000/security-plus-study-hub`, push ขึ้น `main` และตรวจยืนยันผล GitHub Actions & Live GitHub Pages URL
+
+---
+
+## Phase 8: GitHub Repository, CI/CD Workflow & GitHub Pages Deployment — COMPLETED (2026-11-24)
+
+### ไฟล์ที่สร้าง/ตรวจสอบ
+- CI/CD Workflow: `.github/workflows/deploy.yml` (รัน `validate:content`, `lint`, `typecheck`, `test`, `build` ภายใต้ `VITE_BASE_PATH=/security-plus-study-hub/`, Playwright `test:e2e`, `configure-pages@v5`, `upload-pages-artifact@v3`, และ `deploy-pages@v4`)
+- Pre-Commit Audit: ตรวจยืนยัน `git check-ignore` ไม่รวม `PROMPT.md`, `dist/`, `node_modules/`, `test-results/`, `playwright-report/`, `.env` และ secret scan ไม่พบ credential หรือ secret ใดๆ (`0` hits)
+
+### ผลลัพธ์บน GitHub & Live Site
+- **Repository:** `https://github.com/Dome0000/security-plus-study-hub` (`public`, branch `main`)
+- **Initial Release Commit (`main`):** `6094f7467218d00b5b5e4f9ef169e52a8fd04c5c` (`97 files changed`)
+- **GitHub Pages Configuration:** `build_type: workflow`, `https_enforced: true`, URL `https://dome0000.github.io/security-plus-study-hub/`
+- **GitHub Actions Run #1 (`45399072892`):** `https://github.com/Dome0000/security-plus-study-hub/actions/runs/45399072892` — **PASSED** (`build-and-test`: `success` in `1m2s`; `deploy`: `success` in `1m41s`)
+- **Live Browser Verification (`browser` subagent):** เปิดตรวจ `https://dome0000.github.io/security-plus-study-hub/` และนำทางครบ `#/curriculum`, `#/lessons/L1-01`, `#/mock-exam`, `#/glossary`, `#/sources` พบ HTTP `200`, `0` console/page errors, `0` failed network/404 asset requests และแสดง Disclaimer ภาษาไทยครบถ้วนใน Footer
+
+### สิ่งที่ยังค้าง
+- **ไม่มีงานค้าง — ครบถ้วนตาม Definition of Done ทั้ง 8 ข้อเรียบร้อยแล้ว**
