@@ -221,6 +221,9 @@ export function MockExamPage() {
     );
     const currentRef = activeSession.itemOrder[currentIdx];
     const unansweredTotal = countUnansweredItems(activeSession, questionsById);
+    const totalItems = activeSession.itemOrder.length;
+    const answeredTotal = Math.max(0, totalItems - unansweredTotal);
+    const answeredPercent = totalItems > 0 ? Math.round((answeredTotal / totalItems) * 100) : 0;
 
     const isItemAnswered = (item: { itemId: string; kind: 'question' | 'pbq' }): boolean => {
       if (item.kind === 'question') {
@@ -263,7 +266,7 @@ export function MockExamPage() {
         )}
 
         {/* Exam Runner Toolbar */}
-        <section className="card" aria-label="แถบควบคุมการสอบจำลอง">
+        <section className="exam-toolbar-sticky stack-sm" aria-label="แถบควบคุมการสอบจำลอง">
           <div
             style={{
               display: 'flex',
@@ -278,16 +281,12 @@ export function MockExamPage() {
                 <ShieldCheck size={14} aria-hidden="true" />
                 {activeSession.mode.toUpperCase()}
               </span>
-              <span className="badge">
-                ข้อที่ {currentIdx + 1} / {activeSession.itemOrder.length}
+              <span className="badge tabular-nums">
+                ข้อที่ {currentIdx + 1} / {totalItems}
               </span>
               <span
-                className={`badge ${
-                  isUrgent
-                    ? 'badge-danger'
-                    : isWarningTime
-                      ? 'badge-warning'
-                      : 'badge-info'
+                className={`timer-pill tabular-nums ${
+                  isUrgent ? 'urgent' : isWarningTime ? 'warning' : ''
                 }`}
                 aria-label={`เวลาคงเหลือ ${remainingLabel}`}
               >
@@ -314,7 +313,7 @@ export function MockExamPage() {
                 onClick={() => setNavigatorOpen((prev) => !prev)}
               >
                 <Grid size={15} aria-hidden="true" />
-                <span>ตัวนำทางข้อสอบ ({activeSession.itemOrder.length})</span>
+                <span>ตัวนำทางข้อสอบ ({totalItems})</span>
               </button>
 
               <button
@@ -327,6 +326,35 @@ export function MockExamPage() {
               </button>
             </div>
           </div>
+
+          <div className="stack-sm" style={{ gap: '4px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                fontWeight: 600
+              }}
+            >
+              <span>ความคืบหน้าการตอบข้อสอบ</span>
+              <span className="tabular-nums">
+                ตอบครบ {answeredTotal} / {totalItems} ข้อ ({answeredPercent}%) • ปักธง {activeSession.flaggedIds.length}
+              </span>
+            </div>
+            <div
+              className="exam-progress-mini"
+              role="progressbar"
+              aria-label="ความคืบหน้าการทำข้อสอบจำลอง"
+              aria-valuenow={answeredPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="progress-fill" style={{ width: `${answeredPercent}%` }} />
+            </div>
+          </div>
         </section>
 
         {/* Navigator Grid Drawer */}
@@ -334,9 +362,9 @@ export function MockExamPage() {
           <section className="card stack-sm" aria-label="แผนผังข้อสอบทั้งหมด">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div className="btn-row">
-                <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
-                  สถานะ: ตอบครบ {activeSession.itemOrder.length - unansweredTotal} • ยังไม่ครบ{' '}
-                  {unansweredTotal} • ปักธง {activeSession.flaggedIds.length}
+                <span className="tabular-nums" style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
+                  สถานะ: ตอบครบ {answeredTotal} • ยังไม่ครบ {unansweredTotal} • ปักธง{' '}
+                  {activeSession.flaggedIds.length}
                 </span>
               </div>
               <div className="btn-row">
@@ -364,6 +392,19 @@ export function MockExamPage() {
               </div>
             </div>
 
+            <div className="exam-nav-legend" aria-label="คำอธิบายสัญลักษณ์ตัวนำทางข้อสอบ">
+              <span className="badge">
+                <span aria-hidden="true">○</span> ยังไม่ตอบ
+              </span>
+              <span className="badge badge-success">
+                <span aria-hidden="true">✓</span> ตอบแล้ว
+              </span>
+              <span className="badge badge-warning">
+                <span aria-hidden="true">⚑</span> ปักธงทบทวน
+              </span>
+              <span className="badge badge-info">P = PBQ</span>
+            </div>
+
             <div className="exam-nav-grid">
               {activeSession.itemOrder.map((item, idx) => {
                 const answered = isItemAnswered(item);
@@ -380,7 +421,7 @@ export function MockExamPage() {
                   <button
                     key={item.itemId}
                     type="button"
-                    className={`exam-nav-pill ${answered ? 'answered' : ''} ${flagged ? 'flagged' : ''} ${isCurrent ? 'current' : ''}`}
+                    className={`exam-nav-pill tabular-nums ${answered ? 'answered' : ''} ${flagged ? 'flagged' : ''} ${isCurrent ? 'current' : ''}`}
                     aria-current={isCurrent ? 'step' : undefined}
                     aria-label={`ข้อที่ ${idx + 1} (${item.kind === 'pbq' ? 'PBQ' : 'คำถาม'}) ${statusWord}${flagged ? ' ปักธงทบทวน' : ''}`}
                     onClick={() => {
@@ -415,7 +456,7 @@ export function MockExamPage() {
               }}
             >
               <div className="btn-row">
-                <span className="badge">ข้อที่ {currentIdx + 1}</span>
+                <span className="badge badge-info tabular-nums">ข้อที่ {currentIdx + 1}</span>
                 {currentQuestion && (
                   <>
                     <DomainBadge
@@ -478,14 +519,14 @@ export function MockExamPage() {
                             )
                           }
                         />
-                        <span className="badge" style={{ flexShrink: 0 }}>
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        <BilingualPrompt
-                          textEn={choice.textEn}
-                          textTh={choice.textTh}
-                          showThai={showThai}
-                        />
+                        <span className="choice-letter">{String.fromCharCode(65 + idx)}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <BilingualPrompt
+                            textEn={choice.textEn}
+                            textTh={choice.textTh}
+                            showThai={showThai}
+                          />
+                        </div>
                       </label>
                     );
                   })}
@@ -524,14 +565,14 @@ export function MockExamPage() {
           </button>
 
           <div className="btn-row">
-            {currentIdx < activeSession.itemOrder.length - 1 ? (
+            {currentIdx < totalItems - 1 ? (
               <button
                 type="button"
                 className="btn btn-primary"
                 onClick={() =>
                   setActiveExamSession({
                     ...activeSession,
-                    currentIndex: Math.min(activeSession.itemOrder.length - 1, currentIdx + 1)
+                    currentIndex: Math.min(totalItems - 1, currentIdx + 1)
                   })
                 }
               >
@@ -557,7 +598,7 @@ export function MockExamPage() {
           description={
             unansweredTotal > 0
               ? `คำเตือน: คุณยังมีข้อที่ยังไม่ได้ตอบหรือตอบไม่ครบจำนวน ${unansweredTotal} ข้อ หากส่งข้อสอบตอนนี้ระบบจะตรวจคะแนนและบันทึกผลทันที`
-              : `คุณตอบครบทั้ง ${activeSession.itemOrder.length} ข้อแล้ว ต้องการส่งคำตอบเพื่อตรวจคะแนนทันทีหรือไม่?`
+              : `คุณตอบครบทั้ง ${totalItems} ข้อแล้ว ต้องการส่งคำตอบเพื่อตรวจคะแนนทันทีหรือไม่?`
           }
           confirmLabel="ยืนยันส่งข้อสอบ"
           cancelLabel="กลับไปทำต่อ"
@@ -619,19 +660,60 @@ export function MockExamPage() {
         )}
 
         <section className="card stack-md">
-          <h2 style={{ margin: 0 }}>รายละเอียดชุดข้อสอบ</h2>
-          <ul className="prose-text" style={{ margin: 0, paddingLeft: '20px' }}>
-            <li>
-              <strong>ชุดข้อสอบ:</strong> {examTitle}
+          <div className="btn-row" style={{ justifyContent: 'space-between' }}>
+            <h2 style={{ margin: 0 }}>รายละเอียดชุดข้อสอบและข้อตกลงก่อนเริ่ม</h2>
+            <span className="badge badge-info">
+              <ShieldCheck size={14} aria-hidden="true" />
+              {pendingChoice.kind === 'random' ? 'RANDOM 90' : pendingChoice.formId.toUpperCase()}
+            </span>
+          </div>
+
+          <div className="grid-3">
+            <div className="card-subtle stack-sm">
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
+                ชุดข้อสอบที่เลือก
+              </span>
+              <strong style={{ fontSize: 'var(--text-base)' }}>{examTitle}</strong>
+            </div>
+            <div className="card-subtle stack-sm">
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
+                จำนวนข้อสอบทั้งหมด
+              </span>
+              <strong className="tabular-nums" style={{ fontSize: 'var(--text-xl)' }}>
+                {totalCount} ข้อ
+              </strong>
+            </div>
+            <div className="card-subtle stack-sm">
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
+                เวลาสอบจำลอง
+              </span>
+              <strong className="tabular-nums" style={{ fontSize: 'var(--text-xl)' }}>
+                {durationMin} นาที
+              </strong>
+            </div>
+          </div>
+
+          <ul
+            className="stack-sm"
+            style={{ listStyle: 'none', margin: 0, padding: 0 }}
+          >
+            <li className="card-subtle" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <CheckCircle2 size={18} aria-hidden="true" style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
+              <span className="prose-text">
+                <strong>การจับเวลา:</strong> นับถอยหลังต่อเนื่อง {durationMin} นาที และส่งข้อสอบอัตโนมัติทันทีเมื่อหมดเวลา
+              </span>
             </li>
-            <li>
-              <strong>จำนวนข้อสอบ:</strong> {totalCount} ข้อ • <strong>เวลาสอบ:</strong> {durationMin} นาที (นับถอยหลังต่อเนื่องและส่งอัตโนมัติเมื่อหมดเวลา)
+            <li className="card-subtle" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <CheckCircle2 size={18} aria-hidden="true" style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
+              <span className="prose-text">
+                <strong>หมายเหตุโครงสร้างชุดฝึก:</strong> {EXAM_METADATA.mockFormStructureNote}
+              </span>
             </li>
-            <li>
-              <strong>หมายเหตุโครงสร้างชุดฝึก:</strong> {EXAM_METADATA.mockFormStructureNote}
-            </li>
-            <li>
-              <strong>ข้อจำกัดเครื่องมือฝึกสอบ:</strong> {EXAM_METADATA.disclaimerTh}
+            <li className="card-subtle" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <CheckCircle2 size={18} aria-hidden="true" style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
+              <span className="prose-text">
+                <strong>ข้อจำกัดเครื่องมือฝึกสอบ:</strong> {EXAM_METADATA.disclaimerTh}
+              </span>
             </li>
           </ul>
 
@@ -690,17 +772,20 @@ export function MockExamPage() {
           const seenInPractice = allFormIds.filter(
             (id) => progress.questionHistory[id]?.seenInPractice
           ).length;
+          const seenPercent =
+            allFormIds.length > 0 ? Math.round((seenInPractice / allFormIds.length) * 100) : 0;
 
           return (
-            <article key={form.id} className="card stack-md">
+            <article key={form.id} className="mock-form-card stack-md">
+              <div className="mock-form-accent" data-form={form.id} aria-hidden="true" />
               <div>
-                <div className="btn-row" style={{ marginBottom: '6px' }}>
+                <div className="btn-row" style={{ marginBottom: '8px' }}>
                   <span className="badge badge-info">{form.id.toUpperCase()}</span>
-                  <span className="badge">
+                  <span className="badge tabular-nums">
                     <Clock size={12} aria-hidden="true" />
                     {form.durationMinutes} นาที
                   </span>
-                  <span className="badge">
+                  <span className="badge tabular-nums">
                     {form.questionIds.length} MCQ/MSQ + {form.pbqIds.length} PBQ
                   </span>
                 </div>
@@ -714,16 +799,33 @@ export function MockExamPage() {
                 {form.descriptionTh}
               </p>
 
-              <div className="card-subtle" style={{ fontSize: 'var(--text-xs)' }}>
-                <CheckCircle2
-                  size={14}
-                  aria-hidden="true"
-                  style={{ verticalAlign: 'text-bottom', marginRight: '6px' }}
-                />
-                เคยเห็นใน Practice Mode แล้ว <strong>{seenInPractice}</strong> / {allFormIds.length} ข้อ
+              <div className="card-subtle stack-sm" style={{ fontSize: 'var(--text-xs)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                  <span>
+                    <CheckCircle2
+                      size={14}
+                      aria-hidden="true"
+                      style={{ verticalAlign: 'text-bottom', marginRight: '6px' }}
+                    />
+                    เคยเห็นใน Practice Mode แล้ว
+                  </span>
+                  <strong className="tabular-nums">
+                    {seenInPractice} / {allFormIds.length} ข้อ ({seenPercent}%)
+                  </strong>
+                </div>
+                <div
+                  className="progress-track"
+                  role="progressbar"
+                  aria-label={`สัดส่วนข้อสอบชุด ${form.id.toUpperCase()} ที่เคยฝึกแล้ว`}
+                  aria-valuenow={seenPercent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <div className="progress-fill" style={{ width: `${seenPercent}%` }} />
+                </div>
               </div>
 
-              <div>
+              <div style={{ marginTop: 'auto' }}>
                 <button
                   type="button"
                   className="btn btn-primary"
@@ -740,15 +842,16 @@ export function MockExamPage() {
           );
         })}
 
-        <article className="card stack-md">
+        <article className="mock-form-card stack-md">
+          <div className="mock-form-accent" data-form="random" aria-hidden="true" />
           <div>
-            <div className="btn-row" style={{ marginBottom: '6px' }}>
+            <div className="btn-row" style={{ marginBottom: '8px' }}>
               <span className="badge badge-info">RANDOM 90</span>
-              <span className="badge">
+              <span className="badge tabular-nums">
                 <Clock size={12} aria-hidden="true" />
                 {EXAM_METADATA.durationMinutes} นาที
               </span>
-              <span className="badge">85 MCQ/MSQ + 5 PBQ</span>
+              <span className="badge tabular-nums">85 MCQ/MSQ + 5 PBQ</span>
             </div>
             <h2 style={{ margin: '0 0 4px' }}>สุ่มข้อสอบใหม่ (Random 90 ข้อ)</h2>
             <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-secondary)' }}>
@@ -760,7 +863,20 @@ export function MockExamPage() {
             ระบบจะสุ่ม 90 ข้อ (D1 12%, D2 22%, D3 18%, D4 28%, D5 20%) โดยไม่ซ้ำข้อ และจะแจ้งเตือนหากคลังข้อสอบในโหมดปัจจุบันมีไม่ครบ 90 ข้อ
           </p>
 
-          <div>
+          <div className="card-subtle stack-sm" style={{ fontSize: 'var(--text-xs)' }}>
+            <div style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>
+              สัดส่วน Domain ที่ใช้สุ่มอัตโนมัติ
+            </div>
+            <div className="btn-row" style={{ gap: '6px' }}>
+              {EXAM_METADATA.domains.map((dom) => (
+                <span key={dom.id} className="badge badge-domain tabular-nums" data-domain={dom.id}>
+                  {dom.id} {dom.weightPercent}%
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 'auto' }}>
             <button
               type="button"
               className="btn btn-primary"

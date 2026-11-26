@@ -49,6 +49,32 @@ export function StudyPlanPage() {
     });
   }, [studyDays, typeFilter, statusFilter, completedDaysSet]);
 
+  const phaseGroups = useMemo(() => {
+    const groups: { phaseTh: string; days: StudyPlanDay[] }[] = [];
+    for (const day of filteredDays) {
+      const last = groups[groups.length - 1];
+      if (last && last.phaseTh === day.phaseTh) {
+        last.days.push(day);
+      } else {
+        groups.push({ phaseTh: day.phaseTh, days: [day] });
+      }
+    }
+    return groups;
+  }, [filteredDays]);
+
+  const phaseTotalsMap = useMemo(() => {
+    const map = new Map<string, { total: number; done: number }>();
+    for (const day of studyDays) {
+      const prev = map.get(day.phaseTh) ?? { total: 0, done: 0 };
+      prev.total += 1;
+      if (completedDaysSet.has(day.day)) {
+        prev.done += 1;
+      }
+      map.set(day.phaseTh, prev);
+    }
+    return map;
+  }, [studyDays, completedDaysSet]);
+
   const doneCount = studyDays.filter((d) => completedDaysSet.has(d.day)).length;
   const percent =
     studyDays.length > 0 ? Math.round((doneCount / studyDays.length) * 100) : 0;
@@ -70,8 +96,16 @@ export function StudyPlanPage() {
 
       {/* Overall Progress & Filters */}
       <section className="card stack-md" aria-label="ความคืบหน้าแผนอ่านสอบ">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ fontWeight: 700 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '8px'
+          }}
+        >
+          <div className="tabular-nums" style={{ fontWeight: 700 }}>
             <CalendarDays
               size={18}
               aria-hidden="true"
@@ -128,134 +162,174 @@ export function StudyPlanPage() {
         </div>
       </section>
 
-      {/* Day Cards */}
-      {filteredDays.length === 0 ? (
+      {/* Sequential Phase Groups & Day Cards */}
+      {phaseGroups.length === 0 ? (
         <div className="card-subtle">ไม่พบวันในแผนอ่านสอบที่ตรงกับตัวกรอง</div>
       ) : (
-        <div className="stack-md">
-          {filteredDays.map((day) => {
-            const isDone = completedDaysSet.has(day.day);
-            const DayIcon =
-              day.dayType === 'mock-exam'
-                ? ShieldCheck
-                : day.dayType === 'review'
-                  ? RotateCcw
-                  : BookOpen;
-            const dayTypeLabel =
-              day.dayType === 'mock-exam'
-                ? 'Mock Exam'
-                : day.dayType === 'review'
-                  ? 'ทบทวน'
-                  : 'เรียนเนื้อหา';
+        <div className="stack-lg">
+          {phaseGroups.map((group, groupIdx) => {
+            const phaseStat = phaseTotalsMap.get(group.phaseTh) ?? {
+              total: group.days.length,
+              done: group.days.filter((d) => completedDaysSet.has(d.day)).length
+            };
 
             return (
-              <article key={day.day} className="card stack-md">
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    flexWrap: 'wrap',
-                    gap: '12px'
-                  }}
-                >
-                  <div className="stack-sm">
-                    <div className="btn-row">
-                      <span className="badge badge-info">Day {day.day}</span>
-                      <span className="badge">{day.phaseTh}</span>
-                      <span
-                        className={`badge ${
-                          day.dayType === 'mock-exam'
-                            ? 'badge-warning'
-                            : day.dayType === 'review'
-                              ? 'badge-info'
-                              : ''
-                        }`}
-                      >
-                        <DayIcon size={13} aria-hidden="true" />
-                        <span>{dayTypeLabel}</span>
-                      </span>
-                      <span className="badge">
-                        <Clock size={12} aria-hidden="true" />
-                        {day.estimatedMinutes} นาที
-                      </span>
-                      {day.objectiveIds.map((oid) => (
-                        <span key={oid} className="badge">
-                          Obj {oid}
-                        </span>
-                      ))}
-                    </div>
-
-                    <h2 style={{ margin: 0 }}>{day.titleTh}</h2>
-                  </div>
-
-                  <label className="checkbox-label card-subtle" style={{ padding: '8px 12px' }}>
-                    <input
-                      type="checkbox"
-                      checked={isDone}
-                      onChange={() => toggleStudyDay(day.day)}
-                    />
-                    <span>{isDone ? '✓ ทำเสร็จแล้ว' : 'ทำเครื่องหมายเสร็จสิ้น'}</span>
-                  </label>
+              <section
+                key={`${group.phaseTh}-${groupIdx}`}
+                className="timeline-phase-group stack-md"
+                aria-label={group.phaseTh}
+              >
+                <div className="timeline-phase-header">
+                  <h2 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>{group.phaseTh}</h2>
+                  <span className="badge badge-info tabular-nums">
+                    เสร็จแล้ว {phaseStat.done} / {phaseStat.total} วัน
+                  </span>
                 </div>
 
-                <ul className="prose-text" style={{ margin: 0, paddingLeft: '20px' }}>
-                  {day.tasksTh.map((task) => (
-                    <li key={task} style={{ marginBottom: '4px' }}>
-                      {task}
-                    </li>
-                  ))}
-                </ul>
+                <div className="stack-md">
+                  {group.days.map((day) => {
+                    const isDone = completedDaysSet.has(day.day);
+                    const DayIcon =
+                      day.dayType === 'mock-exam'
+                        ? ShieldCheck
+                        : day.dayType === 'review'
+                          ? RotateCcw
+                          : BookOpen;
+                    const dayTypeLabel =
+                      day.dayType === 'mock-exam'
+                        ? 'Mock Exam'
+                        : day.dayType === 'review'
+                          ? 'ทบทวน'
+                          : 'เรียนเนื้อหา';
 
-                <div className="alert alert-info">
-                  <Lightbulb size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <div>
-                    <strong>เคล็ดลับวันนี้: </strong>
-                    {day.focusTipTh}
-                  </div>
-                </div>
-
-                <div className="btn-row">
-                  {day.lessonIds.map((lid) => {
-                    const lesson = lessonsById.get(lid);
-                    const lessonDone = completedLessonsSet.has(lid);
                     return (
-                      <Link
-                        key={lid}
-                        to={`/lessons/${lid}`}
-                        className={`btn btn-sm ${lessonDone ? 'btn-success' : ''}`}
+                      <article
+                        key={day.day}
+                        className={`timeline-day-card ${isDone ? 'day-done' : ''}`}
+                        data-day-type={day.dayType}
                       >
-                        {lessonDone ? (
-                          <CheckCircle2 size={14} aria-hidden="true" />
-                        ) : (
-                          <BookOpen size={14} aria-hidden="true" />
-                        )}
-                        <span>{lesson ? `${lid}: ${lesson.titleTh}` : lid}</span>
-                      </Link>
+                        <div className="stack-md" style={{ width: '100%' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              flexWrap: 'wrap',
+                              gap: '12px'
+                            }}
+                          >
+                          <div className="stack-sm" style={{ flex: '1 1 320px', minWidth: 0 }}>
+                            <div className="btn-row">
+                              <span
+                                className={`timeline-day-badge tabular-nums ${isDone ? 'done' : ''}`}
+                              >
+                                Day {day.day}
+                              </span>
+                              <span
+                                className={`badge ${
+                                  day.dayType === 'mock-exam'
+                                    ? 'badge-warning'
+                                    : day.dayType === 'review'
+                                      ? 'badge-info'
+                                      : ''
+                                }`}
+                              >
+                                <DayIcon size={13} aria-hidden="true" />
+                                <span>{dayTypeLabel}</span>
+                              </span>
+                              <span className="badge tabular-nums">
+                                <Clock size={12} aria-hidden="true" />
+                                {day.estimatedMinutes} นาที
+                              </span>
+                            </div>
+
+                            <h3 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>
+                              {day.titleTh}
+                            </h3>
+
+                            <div className="btn-row">
+                              {day.objectiveIds.map((oid) => (
+                                <span key={oid} className="badge tabular-nums">
+                                  Obj {oid}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <label className="checkbox-label card-subtle" style={{ padding: '8px 12px' }}>
+                            <input
+                              type="checkbox"
+                              checked={isDone}
+                              onChange={() => toggleStudyDay(day.day)}
+                            />
+                            <span>{isDone ? '✓ ทำเสร็จแล้ว' : 'ทำเครื่องหมายเสร็จสิ้น'}</span>
+                          </label>
+                        </div>
+
+                        <ul className="prose-text" style={{ margin: 0, paddingLeft: '20px' }}>
+                          {day.tasksTh.map((task) => (
+                            <li key={task} style={{ marginBottom: '4px' }}>
+                              {task}
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="alert alert-info">
+                          <Lightbulb size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: '2px' }} />
+                          <div>
+                            <strong>เคล็ดลับวันนี้: </strong>
+                            {day.focusTipTh}
+                          </div>
+                        </div>
+
+                        <div className="btn-row">
+                          {day.lessonIds.map((lid) => {
+                            const lesson = lessonsById.get(lid);
+                            const lessonDone = completedLessonsSet.has(lid);
+                            return (
+                              <Link
+                                key={lid}
+                                to={`/lessons/${lid}`}
+                                className={`btn btn-sm ${lessonDone ? 'btn-success' : ''}`}
+                              >
+                                {lessonDone ? (
+                                  <CheckCircle2 size={14} aria-hidden="true" />
+                                ) : (
+                                  <BookOpen size={14} aria-hidden="true" />
+                                )}
+                                <span>{lesson ? `${lid}: ${lesson.titleTh}` : lid}</span>
+                              </Link>
+                            );
+                          })}
+
+                          {day.practiceTargetCount > 0 && (
+                            <Link
+                              to={`/practice?objective=${day.objectiveIds[0] ?? 'ALL'}`}
+                              className="btn btn-sm"
+                            >
+                              <ClipboardCheck size={14} aria-hidden="true" />
+                              <span className="tabular-nums">
+                                เป้าหมายฝึกทำข้อสอบ {day.practiceTargetCount} ข้อ
+                              </span>
+                            </Link>
+                          )}
+
+                          {day.mockFormId && (
+                            <Link
+                              to={`/mock-exam?form=${day.mockFormId}`}
+                              className="btn btn-sm btn-primary"
+                            >
+                              <ShieldCheck size={14} aria-hidden="true" />
+                              <span>เริ่มทำ {day.mockFormId.toUpperCase()}</span>
+                            </Link>
+                          )}
+                        </div>
+                        </div>
+                      </article>
                     );
                   })}
-
-                  {day.practiceTargetCount > 0 && (
-                    <Link
-                      to={`/practice?objective=${day.objectiveIds[0] ?? 'ALL'}`}
-                      className="btn btn-sm"
-                    >
-                      <ClipboardCheck size={14} aria-hidden="true" />
-                      <span>เป้าหมายฝึกทำข้อสอบ {day.practiceTargetCount} ข้อ</span>
-                    </Link>
-                  )}
-
-                  {day.mockFormId && (
-                    <Link
-                      to={`/mock-exam?form=${day.mockFormId}`}
-                      className="btn btn-sm btn-primary"
-                    >
-                      <ShieldCheck size={14} aria-hidden="true" />
-                      <span>เริ่มทำ {day.mockFormId.toUpperCase()}</span>
-                    </Link>
-                  )}
                 </div>
-              </article>
+              </section>
             );
           })}
         </div>

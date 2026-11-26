@@ -13,6 +13,7 @@ export function DomainBadge({ domainId, objectiveIds, compact = false }: DomainB
   return (
     <span className="btn-row" style={{ gap: '6px' }}>
       <span className="badge badge-domain" data-domain={domainId}>
+        <span className="domain-dot" data-domain={domainId} aria-hidden="true" />
         {domain
           ? compact
             ? `${domain.id} (${domain.number})`

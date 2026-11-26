@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, FileText, Search, Target, X } from 'lucide-react';
+import { ArrowRight, BookOpen, FileText, Search, Target, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { EXAM_METADATA } from '../data/examMeta';
 import type { DomainId } from '../types';
@@ -57,7 +57,6 @@ export function GlobalSearchModal() {
     const items: SearchResultItem[] = [];
 
     if (!trimmed) {
-      // Quick suggestions when search is empty
       for (const lesson of (bundle?.lessons ?? []).slice(0, 4)) {
         items.push({
           key: `lesson-${lesson.id}`,
@@ -170,19 +169,52 @@ export function GlobalSearchModal() {
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-          <h2 id={titleId} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Search size={20} aria-hidden="true" />
-            ค้นหาทั่วทั้งระบบ (Global Search)
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+            paddingBottom: '10px',
+            borderBottom: '1px solid var(--border-subtle)'
+          }}
+        >
+          <h2
+            id={titleId}
+            style={{
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontSize: 'var(--text-lg)'
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--accent-soft)',
+                color: 'var(--accent-primary)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <Search size={17} />
+            </span>
+            <span>ค้นหาทั่วทั้งระบบ (Global Search)</span>
           </h2>
           <button
             type="button"
-            className="btn btn-sm"
+            className="btn btn-sm btn-ghost"
             onClick={closeSearch}
             aria-label="ปิดหน้าต่างค้นหา"
           >
             <X size={16} aria-hidden="true" />
-            ปิด
+            <span>ปิด</span>
           </button>
         </div>
 
@@ -219,14 +251,27 @@ export function GlobalSearchModal() {
               }
             }}
           />
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-            ใช้ปุ่มลูกศร ขึ้น/ลง เพื่อเลือก และกด Enter เพื่อเปิดหน้า หรือ Esc เพื่อปิด
-          </span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
+              fontWeight: 600
+            }}
+          >
+            <span>
+              {query.trim() ? 'ผลลัพธ์ที่ตรงกับคำค้น' : 'แนะนำด่วน (Quick Access)'}
+            </span>
+            <span className="tabular-nums">พบ {results.length} รายการ</span>
+          </div>
         </div>
 
         <div className="search-results-list" role="region" aria-label="ผลลัพธ์การค้นหา">
           {results.length === 0 ? (
-            <div className="card-subtle" style={{ textAlign: 'center' }}>
+            <div className="card-subtle" style={{ textAlign: 'center', padding: '24px 16px' }}>
               ไม่พบรายการที่ตรงกับ &ldquo;{query}&rdquo; ลองค้นด้วยรหัส Objective (เช่น 1.1–5.6) หรือคำศัพท์ภาษาอังกฤษ
             </div>
           ) : (
@@ -244,6 +289,12 @@ export function GlobalSearchModal() {
                   : item.kind === 'glossary'
                     ? 'คำศัพท์'
                     : 'Objective';
+              const kindBadgeClass =
+                item.kind === 'lesson'
+                  ? 'badge-info'
+                  : item.kind === 'glossary'
+                    ? 'badge-success'
+                    : 'badge-warning';
 
               return (
                 <button
@@ -253,25 +304,84 @@ export function GlobalSearchModal() {
                   onClick={() => selectResult(item)}
                   onMouseEnter={() => setActiveIdx(idx)}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      <KindIcon size={16} aria-hidden="true" />
-                      {item.title}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '8px',
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <KindIcon size={16} aria-hidden="true" style={{ flexShrink: 0, color: 'var(--accent-primary)' }} />
+                      <span>{item.title}</span>
                     </span>
-                    <span className="btn-row" style={{ gap: '4px' }}>
+                    <span className="btn-row" style={{ gap: '6px' }}>
                       <span className="badge badge-domain" data-domain={item.domainId}>
+                        <span className="domain-dot" data-domain={item.domainId} aria-hidden="true" />
                         {item.domainId}
                       </span>
-                      <span className="badge">{kindLabel}</span>
+                      <span className={`badge ${kindBadgeClass}`}>{kindLabel}</span>
                     </span>
                   </div>
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                    {item.subtitle}
-                  </span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '8px'
+                    }}
+                  >
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                      {item.subtitle}
+                    </span>
+                    {isSelected && (
+                      <ArrowRight
+                        size={14}
+                        aria-hidden="true"
+                        style={{ flexShrink: 0, color: 'var(--accent-primary)' }}
+                      />
+                    )}
+                  </div>
                 </button>
               );
             })
           )}
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px',
+            paddingTop: '10px',
+            borderTop: '1px solid var(--border-subtle)',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-muted)'
+          }}
+        >
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <kbd className="kbd-chip">↑</kbd>
+            <kbd className="kbd-chip">↓</kbd>
+            <span>เลือกรายการ</span>
+            <span aria-hidden="true">•</span>
+            <kbd className="kbd-chip">Enter</kbd>
+            <span>เปิดหน้า</span>
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <kbd className="kbd-chip">Esc</kbd>
+            <span>ปิดหน้าต่าง</span>
+          </span>
         </div>
       </div>
     </div>

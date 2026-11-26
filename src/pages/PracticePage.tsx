@@ -6,6 +6,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ClipboardCheck,
+  Filter,
   Languages,
   Play,
   RotateCcw
@@ -240,6 +241,18 @@ export function PracticePage() {
 
   // Setup View
   if (!sessionItems) {
+    const hasActiveFilters =
+      domainFilter !== 'ALL' ||
+      objectiveFilter !== 'ALL' ||
+      difficultyFilter !== 'all' ||
+      typeFilter !== 'all' ||
+      retryMissedOnly;
+
+    const sessionCountPreview =
+      countFilter === 'ALL'
+        ? matchingPool.length
+        : Math.min(Number(countFilter), matchingPool.length);
+
     return (
       <div className="stack-lg">
         <div className="page-header">
@@ -249,9 +262,50 @@ export function PracticePage() {
               เลือกกรองตาม Domain, Official Objective, ระดับความยาก หรือฝึกซ้ำเฉพาะข้อที่เคยตอบผิด (MCQ / MSQ / PBQ)
             </p>
           </div>
+          <span className="badge badge-info tabular-nums">
+            <Filter size={14} aria-hidden="true" />
+            <span>คลังที่ตรงเงื่อนไข {matchingPool.length} ข้อ</span>
+          </span>
         </div>
 
         <section className="card stack-md" aria-label="ตั้งค่าชุดฝึกทำข้อสอบ">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '10px',
+              paddingBottom: '10px',
+              borderBottom: '1px solid var(--border-subtle)'
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 'var(--text-base)' }}>
+              ตั้งค่าตัวกรองและรูปแบบการฝึก
+            </div>
+            <div className="btn-row">
+              <span className="badge badge-info tabular-nums">
+                พบข้อสอบที่ตรงเงื่อนไข {matchingPool.length} ข้อ
+              </span>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => {
+                    setDomainFilter('ALL');
+                    setObjectiveFilter('ALL');
+                    setDifficultyFilter('all');
+                    setTypeFilter('all');
+                    setRetryMissedOnly(false);
+                  }}
+                >
+                  <RotateCcw size={14} aria-hidden="true" />
+                  <span>ล้างตัวกรอง</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="grid-3">
             <div className="field-group">
               <label htmlFor={domainIdCtrl} className="field-label">
@@ -370,7 +424,16 @@ export function PracticePage() {
             </fieldset>
           </div>
 
-          <div className="card-subtle" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div
+            className="card-subtle"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px'
+            }}
+          >
             <label className="checkbox-label">
               <input
                 type="checkbox"
@@ -378,34 +441,31 @@ export function PracticePage() {
                 onChange={(ev) => setRetryMissedOnly(ev.target.checked)}
               />
               <span>
-                ฝึกซ้ำเฉพาะข้อที่ผิด (Retry Missed) — มีข้อที่ตอบผิดล่าสุด {missedItemCount} ข้อ
+                ฝึกซ้ำเฉพาะข้อที่ผิด (Retry Missed) — มีข้อที่ตอบผิดล่าสุด{' '}
+                <strong className="tabular-nums">{missedItemCount}</strong> ข้อ
               </span>
             </label>
 
-            <div className="badge badge-info">
-              พบข้อสอบที่ตรงเงื่อนไข {matchingPool.length} ข้อ
-            </div>
-          </div>
-
-          {matchingPool.length === 0 ? (
-            <div className="alert alert-warning" role="status">
-              <AlertCircle size={18} aria-hidden="true" style={{ flexShrink: 0 }} />
-              <div>
-                ไม่พบข้อสอบที่ตรงกับตัวกรองชุดนี้ ลองปรับ Domain / Objective หรือยกเลิกตัวเลือก &ldquo;ฝึกซ้ำเฉพาะข้อที่ผิด&rdquo;
-              </div>
-            </div>
-          ) : (
-            <div className="btn-row">
+            {matchingPool.length > 0 && (
               <button
                 type="button"
                 className="btn btn-primary"
                 onClick={startPracticeSession}
               >
                 <Play size={16} aria-hidden="true" />
-                <span>
-                  เริ่มทำข้อสอบ ({countFilter === 'ALL' ? matchingPool.length : Math.min(Number(countFilter), matchingPool.length)} ข้อ)
+                <span className="tabular-nums">
+                  เริ่มทำข้อสอบ ({sessionCountPreview} ข้อ)
                 </span>
               </button>
+            )}
+          </div>
+
+          {matchingPool.length === 0 && (
+            <div className="alert alert-warning" role="status">
+              <AlertCircle size={18} aria-hidden="true" style={{ flexShrink: 0 }} />
+              <div>
+                ไม่พบข้อสอบที่ตรงกับตัวกรองชุดนี้ ลองปรับ Domain / Objective หรือยกเลิกตัวเลือก &ldquo;ฝึกซ้ำเฉพาะข้อที่ผิด&rdquo;
+              </div>
             </div>
           )}
         </section>
@@ -428,7 +488,7 @@ export function PracticePage() {
         <div className="page-header">
           <div>
             <h1>สรุปผลการฝึกทำข้อสอบ (Practice Summary)</h1>
-            <p className="page-subtitle">
+            <p className="page-subtitle tabular-nums">
               ได้คะแนนรวม {earnedSum} / {total} ({percent}%)
             </p>
           </div>
@@ -486,42 +546,66 @@ export function PracticePage() {
     return Boolean(pbqAnswers[item.data.id]);
   }).length;
 
+  const progressPercent =
+    sessionItems.length > 0 ? Math.round((answeredCount / sessionItems.length) * 100) : 0;
+
   return (
     <div className="stack-md">
-      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-        <div className="btn-row">
-          <button type="button" className="btn btn-sm" onClick={resetToSetup}>
-            <ArrowLeft size={15} aria-hidden="true" />
-            <span>เปลี่ยนตัวกรอง</span>
-          </button>
-          <span className="badge badge-info">
-            ข้อที่ {currentIndex + 1} / {sessionItems.length}
-          </span>
-          <span className="badge">
-            ตอบแล้ว {answeredCount} / {sessionItems.length}
-          </span>
-        </div>
+      <div className="card stack-sm">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}
+        >
+          <div className="btn-row">
+            <button type="button" className="btn btn-sm" onClick={resetToSetup}>
+              <ArrowLeft size={15} aria-hidden="true" />
+              <span>เปลี่ยนตัวกรอง</span>
+            </button>
+            <span className="badge badge-info tabular-nums">
+              ข้อที่ {currentIndex + 1} / {sessionItems.length}
+            </span>
+            <span className="badge tabular-nums">
+              ตอบแล้ว {answeredCount} / {sessionItems.length}
+            </span>
+          </div>
 
-        <div className="btn-row">
-          <button
-            type="button"
-            className={`btn btn-sm ${showThai ? 'btn-active' : ''}`}
-            aria-pressed={showThai}
-            onClick={toggleThaiTranslation}
-          >
-            <Languages size={15} aria-hidden="true" />
-            <span>{showThai ? 'EN + TH' : 'EN เท่านั้น'}</span>
-          </button>
-          {feedbackMode === 'submit-all' && (
+          <div className="btn-row">
             <button
               type="button"
-              className="btn btn-sm btn-primary"
-              onClick={handleSubmitAll}
+              className={`btn btn-sm ${showThai ? 'btn-active' : ''}`}
+              aria-pressed={showThai}
+              onClick={toggleThaiTranslation}
             >
-              <ClipboardCheck size={15} aria-hidden="true" />
-              <span>ส่งคำตอบทั้งหมดและดูเฉลย</span>
+              <Languages size={15} aria-hidden="true" />
+              <span>{showThai ? 'EN + TH' : 'EN เท่านั้น'}</span>
             </button>
-          )}
+            {feedbackMode === 'submit-all' && (
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleSubmitAll}
+              >
+                <ClipboardCheck size={15} aria-hidden="true" />
+                <span>ส่งคำตอบทั้งหมดและดูเฉลย</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div
+          className="progress-track"
+          role="progressbar"
+          aria-label="ความคืบหน้าชุดฝึกทำข้อสอบ"
+          aria-valuenow={progressPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
         </div>
       </div>
 
@@ -544,7 +628,7 @@ export function PracticePage() {
             <button
               key={item.data.id}
               type="button"
-              className={`btn btn-sm ${isCurrent ? 'btn-primary' : itemGraded?.isCorrect ? 'btn-success' : ''}`}
+              className={`btn btn-sm tabular-nums ${isCurrent ? 'btn-primary' : itemGraded?.isCorrect ? 'btn-success' : ''}`}
               aria-current={isCurrent ? 'step' : undefined}
               onClick={() => setCurrentIndex(idx)}
             >
@@ -584,7 +668,7 @@ export function PracticePage() {
               objectiveIds={activeItem.data.objectiveIds}
               compact
             />
-            <span className="badge">{activeItem.data.id}</span>
+            <span className="badge mono">{activeItem.data.id}</span>
             <span className="badge">{activeItem.data.difficulty}</span>
           </div>
 
@@ -618,14 +702,14 @@ export function PracticePage() {
                         checked={isSelected}
                         onChange={() => handleToggleChoice(activeItem.data, choice.id)}
                       />
-                      <span className="badge" style={{ flexShrink: 0 }}>
-                        {String.fromCharCode(65 + idx)}
-                      </span>
-                      <BilingualPrompt
-                        textEn={choice.textEn}
-                        textTh={choice.textTh}
-                        showThai={showThai}
-                      />
+                      <span className="choice-letter">{String.fromCharCode(65 + idx)}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <BilingualPrompt
+                          textEn={choice.textEn}
+                          textTh={choice.textTh}
+                          showThai={showThai}
+                        />
+                      </div>
                     </label>
                   );
                 })}

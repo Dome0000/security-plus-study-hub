@@ -118,6 +118,15 @@ export function ExamResultsPage() {
   });
 
   const submittedDateStr = new Date(attempt.submittedAt).toLocaleString('th-TH');
+  const ringRadius = 56;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const clampedPercent = Math.max(0, Math.min(100, attempt.percentScore));
+  const ringOffset = ringCircumference * (1 - clampedPercent / 100);
+  const ringStrokeColor = reachedPracticeTarget
+    ? 'var(--status-success-border)'
+    : clampedPercent >= 60
+      ? 'var(--status-warning-border)'
+      : 'var(--accent-primary)';
 
   return (
     <div className="stack-lg">
@@ -168,15 +177,60 @@ export function ExamResultsPage() {
         </div>
       </div>
 
-      {/* Score Summary Card */}
+      {/* Hero Score Summary Card */}
       <section className="card stack-md" aria-label="สรุปคะแนนรวม">
-        <div className="grid-3">
-          <div className="card-subtle stack-sm">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px',
+            alignItems: 'center'
+          }}
+        >
+          <div className="card-subtle stack-sm" style={{ alignItems: 'center', textAlign: 'center' }}>
+            <div className="score-ring-wrap">
+              <svg
+                width="140"
+                height="140"
+                viewBox="0 0 140 140"
+                role="img"
+                aria-label={`คะแนนร้อยละ ${attempt.percentScore}%`}
+              >
+                <circle
+                  cx="70"
+                  cy="70"
+                  r={ringRadius}
+                  fill="none"
+                  stroke="var(--border-subtle)"
+                  strokeWidth="12"
+                />
+                <circle
+                  cx="70"
+                  cy="70"
+                  r={ringRadius}
+                  fill="none"
+                  stroke={ringStrokeColor}
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={ringCircumference}
+                  strokeDashoffset={ringOffset}
+                  transform="rotate(-90 70 70)"
+                />
+                <text
+                  x="70"
+                  y="75"
+                  textAnchor="middle"
+                  fill="var(--text-primary)"
+                  fontSize="24"
+                  fontWeight="800"
+                  className="tabular-nums"
+                >
+                  {attempt.percentScore}%
+                </text>
+              </svg>
+            </div>
             <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
               คะแนนร้อยละ (Percentage Score)
-            </div>
-            <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 800 }}>
-              {attempt.percentScore}%
             </div>
             <div>
               {reachedPracticeTarget ? (
@@ -197,7 +251,7 @@ export function ExamResultsPage() {
             <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
               คะแนนดิบที่ได้ / จำนวนข้อทั้งหมด
             </div>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 800 }}>
+            <div className="tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800 }}>
               {attempt.earnedPoints} / {attempt.totalItems} คะแนน
             </div>
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
@@ -209,10 +263,10 @@ export function ExamResultsPage() {
             <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
               ข้อที่ผิด / ได้ไม่เต็ม
             </div>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 800 }}>
+            <div className="tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800 }}>
               {missedCount} ข้อ
             </div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+            <div className="tabular-nums" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               พบจุดอ่อน {attempt.weakObjectiveIds.length} Objectives • แนะนำทบทวน{' '}
               {attempt.recommendedLessonIds.length} บทเรียน
             </div>
@@ -255,14 +309,14 @@ export function ExamResultsPage() {
                         </div>
                       )}
                     </td>
-                    <td>{domainMeta ? `${domainMeta.weightPercent}%` : '—'}</td>
-                    <td>
+                    <td className="tabular-nums">{domainMeta ? `${domainMeta.weightPercent}%` : '—'}</td>
+                    <td className="tabular-nums">
                       {ds.earnedPoints} / {ds.totalItems}
                     </td>
                     <td style={{ minWidth: '180px' }}>
                       {ds.totalItems > 0 ? (
                         <div className="stack-sm" style={{ gap: '4px' }}>
-                          <span style={{ fontWeight: 700, fontSize: 'var(--text-xs)' }}>
+                          <span className="tabular-nums" style={{ fontWeight: 700, fontSize: 'var(--text-xs)' }}>
                             {ds.percent}%
                           </span>
                           <div
@@ -315,11 +369,11 @@ export function ExamResultsPage() {
                 return (
                   <div
                     key={oid}
-                    className="card-subtle"
+                    className="card-subtle card-interactive"
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}
                   >
                     <div style={{ flex: '1 1 220px' }}>
-                      <span className="badge" style={{ marginBottom: '4px' }}>
+                      <span className="badge badge-info tabular-nums" style={{ marginBottom: '4px' }}>
                         Objective {oid}
                       </span>
                       <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
@@ -356,7 +410,7 @@ export function ExamResultsPage() {
                   <Link
                     key={lid}
                     to={`/lessons/${lid}`}
-                    className="card-subtle"
+                    className="card-subtle card-interactive"
                     style={{ textDecoration: 'none', color: 'inherit', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}
                   >
                     <div>
@@ -391,28 +445,28 @@ export function ExamResultsPage() {
           <div className="btn-row">
             <button
               type="button"
-              className={`btn btn-sm ${reviewFilter === 'all' ? 'btn-active' : ''}`}
+              className={`btn btn-sm tabular-nums ${reviewFilter === 'all' ? 'btn-active' : ''}`}
               onClick={() => setReviewFilter('all')}
             >
               ทั้งหมด ({attempt.itemResults.length})
             </button>
             <button
               type="button"
-              className={`btn btn-sm ${reviewFilter === 'missed' ? 'btn-active' : ''}`}
+              className={`btn btn-sm tabular-nums ${reviewFilter === 'missed' ? 'btn-active' : ''}`}
               onClick={() => setReviewFilter('missed')}
             >
               ข้อที่ผิด / ได้ไม่เต็ม ({missedCount})
             </button>
             <button
               type="button"
-              className={`btn btn-sm ${reviewFilter === 'flagged' ? 'btn-active' : ''}`}
+              className={`btn btn-sm tabular-nums ${reviewFilter === 'flagged' ? 'btn-active' : ''}`}
               onClick={() => setReviewFilter('flagged')}
             >
               ที่ปักธงไว้ ({flaggedCount})
             </button>
             <button
               type="button"
-              className={`btn btn-sm ${reviewFilter === 'pbq' ? 'btn-active' : ''}`}
+              className={`btn btn-sm tabular-nums ${reviewFilter === 'pbq' ? 'btn-active' : ''}`}
               onClick={() => setReviewFilter('pbq')}
             >
               เฉพาะ PBQ ({pbqCount})

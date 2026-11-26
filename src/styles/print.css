@@ -13,6 +13,7 @@
   .app-footer,
   .lesson-toc,
   .lesson-nav-actions,
+  .reading-progress-bar,
   .no-print,
   .skip-link,
   .alert {
@@ -39,9 +40,16 @@
 
   .card,
   .card-subtle,
+  .lesson-hero,
   .table-scroll {
     border: 1px solid #999999 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     break-inside: avoid;
+  }
+
+  .lesson-hero {
+    border-top: 3px solid #000000 !important;
   }
 
   h1,

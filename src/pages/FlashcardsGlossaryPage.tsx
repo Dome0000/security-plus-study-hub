@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  Check,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -20,6 +21,12 @@ import type { DomainId, FlashcardConfidence } from '../types';
 
 type ActiveTab = 'glossary' | 'flashcards';
 type ConfidenceFilter = 'all' | 'unrated' | FlashcardConfidence;
+
+const CONFIDENCE_LABEL_MAP: Record<FlashcardConfidence, string> = {
+  again: 'ทบทวนซ้ำ (Again)',
+  good: 'เข้าใจแล้ว (Good)',
+  mastered: 'แม่นยำ (Mastered)'
+};
 
 export function FlashcardsGlossaryPage() {
   const { bundle, loading, lessonsById, progress, rateFlashcard } = useAppContext();
@@ -102,6 +109,7 @@ export function FlashcardsGlossaryPage() {
   const safeCardIndex =
     filteredCards.length > 0 ? Math.min(cardIndex, filteredCards.length - 1) : 0;
   const activeCard = filteredCards[safeCardIndex] ?? null;
+  const activeCardConfidence = activeCard ? progress.flashcardProgress[activeCard.id] : undefined;
 
   const handleRateCard = (cardId: string, confidence: FlashcardConfidence) => {
     rateFlashcard(cardId, confidence);
@@ -114,6 +122,9 @@ export function FlashcardsGlossaryPage() {
   if (loading) {
     return <div className="card">กำลังโหลดคลังคำศัพท์และแฟลชการ์ด...</div>;
   }
+
+  const pct = (count: number) =>
+    cardStats.total > 0 ? Math.round((count / cardStats.total) * 1000) / 10 : 0;
 
   return (
     <div className="stack-lg">
@@ -201,15 +212,34 @@ export function FlashcardsGlossaryPage() {
           ) : (
             <div className="grid-2">
               {filteredGlossary.map((entry) => (
-                <article key={entry.id} className="card stack-sm">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
-                    <div>
-                      <h2 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>
-                        {entry.termEn}
-                        {entry.acronym ? ` (${entry.acronym})` : ''}
-                      </h2>
+                <article key={entry.id} className="card card-interactive stack-sm">
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '8px',
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                      <div className="btn-row" style={{ gap: '8px', alignItems: 'center' }}>
+                        <h2 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>
+                          {entry.termEn}
+                        </h2>
+                        {entry.acronym && (
+                          <span className="badge badge-info mono">{entry.acronym}</span>
+                        )}
+                      </div>
                       {entry.fullNameEn && (
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        <div
+                          style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-muted)',
+                            fontWeight: 600,
+                            marginTop: '3px'
+                          }}
+                        >
                           {entry.fullNameEn}
                         </div>
                       )}
@@ -249,12 +279,55 @@ export function FlashcardsGlossaryPage() {
           className="stack-md"
         >
           <div className="card stack-md">
-            <div className="btn-row">
-              <span className="badge">ทั้งหมด {cardStats.total}</span>
-              <span className="badge">ยังไม่ประเมิน {cardStats.unrated}</span>
-              <span className="badge badge-warning">ทบทวนซ้ำ (Again) {cardStats.again}</span>
-              <span className="badge badge-info">เข้าใจแล้ว (Good) {cardStats.good}</span>
-              <span className="badge badge-success">แม่นยำ (Mastered) {cardStats.mastered}</span>
+            {/* Stacked Mastery Progress Bar above Flashcards Filters */}
+            <div className="stack-sm">
+              <div className="btn-row">
+                <span className="badge tabular-nums">ทั้งหมด {cardStats.total}</span>
+                <span className="badge badge-success tabular-nums">
+                  แม่นยำ (Mastered) {cardStats.mastered}
+                </span>
+                <span className="badge badge-info tabular-nums">
+                  เข้าใจแล้ว (Good) {cardStats.good}
+                </span>
+                <span className="badge badge-warning tabular-nums">
+                  ทบทวนซ้ำ (Again) {cardStats.again}
+                </span>
+                <span className="badge tabular-nums">ยังไม่ประเมิน {cardStats.unrated}</span>
+              </div>
+
+              <div
+                className="mastery-bar"
+                aria-label="สัดส่วนระดับความแม่นยำของแฟลชการ์ด"
+              >
+                {cardStats.mastered > 0 && (
+                  <div
+                    className="mastery-seg-mastered"
+                    style={{ width: `${pct(cardStats.mastered)}%` }}
+                    title={`แม่นยำ (Mastered): ${cardStats.mastered} ใบ`}
+                  />
+                )}
+                {cardStats.good > 0 && (
+                  <div
+                    className="mastery-seg-good"
+                    style={{ width: `${pct(cardStats.good)}%` }}
+                    title={`เข้าใจแล้ว (Good): ${cardStats.good} ใบ`}
+                  />
+                )}
+                {cardStats.again > 0 && (
+                  <div
+                    className="mastery-seg-again"
+                    style={{ width: `${pct(cardStats.again)}%` }}
+                    title={`ทบทวนซ้ำ (Again): ${cardStats.again} ใบ`}
+                  />
+                )}
+                {cardStats.unrated > 0 && (
+                  <div
+                    className="mastery-seg-unrated"
+                    style={{ width: `${pct(cardStats.unrated)}%` }}
+                    title={`ยังไม่ประเมิน: ${cardStats.unrated} ใบ`}
+                  />
+                )}
+              </div>
             </div>
 
             <div className="grid-2">
@@ -310,10 +383,18 @@ export function FlashcardsGlossaryPage() {
               ไม่พบแฟลชการ์ดที่ตรงกับตัวกรองนี้
             </div>
           ) : (
-            <div className="flashcard-stage">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div className="flashcard-stage" data-domain={activeCard.domainId}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}
+              >
                 <div className="btn-row">
-                  <span className="badge">
+                  <span className="badge tabular-nums">
                     ใบที่ {safeCardIndex + 1} / {filteredCards.length}
                   </span>
                   <DomainBadge
@@ -323,9 +404,9 @@ export function FlashcardsGlossaryPage() {
                   />
                 </div>
 
-                {progress.flashcardProgress[activeCard.id] && (
+                {activeCardConfidence && (
                   <span className="badge badge-info">
-                    ระดับเดิม: {progress.flashcardProgress[activeCard.id]}
+                    ระดับเดิม: {CONFIDENCE_LABEL_MAP[activeCardConfidence]}
                   </span>
                 )}
               </div>
@@ -363,7 +444,7 @@ export function FlashcardsGlossaryPage() {
               </div>
 
               {revealed && (
-                <div className="stack-md" style={{ paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
+                <div className="flashcard-answer-reveal stack-md">
                   <div className="card-subtle stack-sm">
                     <strong>คำตอบเชิงแนวคิด:</strong>
                     <p className="prose-text" style={{ margin: 0 }}>
@@ -373,7 +454,7 @@ export function FlashcardsGlossaryPage() {
 
                   <div className="alert alert-info">
                     <Sparkles size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <div>
+                    <div className="prose-text">
                       <strong>จุดเปรียบเทียบสำคัญ (Compare & Contrast): </strong>
                       {activeCard.compareContrastTh}
                     </div>
@@ -406,9 +487,10 @@ export function FlashcardsGlossaryPage() {
                       </button>
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn btn-sm btn-active"
                         onClick={() => handleRateCard(activeCard.id, 'good')}
                       >
+                        <Check size={14} aria-hidden="true" />
                         <span>เข้าใจแล้ว (Good)</span>
                       </button>
                       <button
@@ -426,7 +508,11 @@ export function FlashcardsGlossaryPage() {
 
               <div
                 className="btn-row"
-                style={{ justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}
+                style={{
+                  justifyContent: 'space-between',
+                  paddingTop: '10px',
+                  borderTop: '1px solid var(--border-subtle)'
+                }}
               >
                 <button
                   type="button"

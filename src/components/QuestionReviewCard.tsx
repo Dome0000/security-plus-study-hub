@@ -72,8 +72,10 @@ export function QuestionReviewCard({
   const selectedSet = new Set(selectedChoiceIds);
   const correctSet = new Set(question?.correctChoiceIds ?? []);
 
+  const statusKey = isCorrect ? 'correct' : isPartial ? 'partial' : 'incorrect';
+
   return (
-    <article className="card stack-md">
+    <article className="card review-card-status stack-md" data-status={statusKey}>
       <div
         style={{
           display: 'flex',
@@ -84,7 +86,7 @@ export function QuestionReviewCard({
         }}
       >
         <div className="btn-row">
-          {indexLabel && <span className="badge">{indexLabel}</span>}
+          {indexLabel && <span className="badge tabular-nums">{indexLabel}</span>}
           {domainId && <DomainBadge domainId={domainId} objectiveIds={objectiveIds} compact />}
           {kind === 'question' && question && (
             <span className="badge">
@@ -100,22 +102,28 @@ export function QuestionReviewCard({
         </div>
 
         <div className="btn-row">
-          {isCorrect ? (
-            <span className="badge badge-success">
-              <CheckCircle2 size={14} aria-hidden="true" />
-              ถูกต้อง ({earnedPoints}/1)
-            </span>
-          ) : isPartial ? (
-            <span className="badge badge-warning">
-              <AlertCircle size={14} aria-hidden="true" />
-              ได้คะแนนบางส่วน ({earnedPoints}/1)
-            </span>
-          ) : (
-            <span className="badge badge-danger">
-              <XCircle size={14} aria-hidden="true" />
-              ไม่ถูกต้อง (0/1)
-            </span>
-          )}
+          <span
+            className={`badge tabular-nums ${
+              isCorrect ? 'badge-success' : isPartial ? 'badge-warning' : 'badge-danger'
+            }`}
+          >
+            {isCorrect ? (
+              <>
+                <CheckCircle2 size={14} aria-hidden="true" />
+                <span>ถูกต้อง ({earnedPoints}/1)</span>
+              </>
+            ) : isPartial ? (
+              <>
+                <AlertCircle size={14} aria-hidden="true" />
+                <span>ได้คะแนนบางส่วน ({earnedPoints}/1)</span>
+              </>
+            ) : (
+              <>
+                <XCircle size={14} aria-hidden="true" />
+                <span>ไม่ถูกต้อง (0/1)</span>
+              </>
+            )}
+          </span>
         </div>
       </div>
 
@@ -140,30 +148,30 @@ export function QuestionReviewCard({
                 <div
                   key={choice.id}
                   className={`choice-card ${cardClass}`}
-                  style={{ cursor: 'default', flexDirection: 'column', gap: '6px' }}
+                  style={{ cursor: 'default', flexDirection: 'column', gap: '8px' }}
                 >
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'flex-start',
                       justifyContent: 'space-between',
-                      gap: '8px',
+                      gap: '10px',
                       width: '100%',
                       flexWrap: 'wrap'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', flex: 1 }}>
-                      <span className="badge" style={{ flexShrink: 0 }}>
-                        {String.fromCharCode(65 + idx)}
-                      </span>
-                      <BilingualPrompt
-                        textEn={choice.textEn}
-                        textTh={choice.textTh}
-                        showThai={showThai}
-                      />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flex: 1, minWidth: 0 }}>
+                      <span className="choice-letter">{String.fromCharCode(65 + idx)}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <BilingualPrompt
+                          textEn={choice.textEn}
+                          textTh={choice.textTh}
+                          showThai={showThai}
+                        />
+                      </div>
                     </div>
 
-                    <div className="btn-row" style={{ gap: '4px' }}>
+                    <div className="btn-row" style={{ gap: '6px' }}>
                       {isSelected && <span className="badge">คำตอบที่คุณเลือก</span>}
                       {isChoiceCorrect && (
                         <span className="badge badge-success">
@@ -175,17 +183,9 @@ export function QuestionReviewCard({
                   </div>
 
                   {rationale && (
-                    <div
-                      style={{
-                        fontSize: 'var(--text-xs)',
-                        color: 'var(--text-secondary)',
-                        paddingTop: '4px',
-                        borderTop: '1px dashed var(--border-subtle)',
-                        width: '100%'
-                      }}
-                    >
+                    <div className="choice-rationale-box">
                       <strong>เหตุผลของตัวเลือก: </strong>
-                      {rationale}
+                      <span>{rationale}</span>
                     </div>
                   )}
                 </div>
@@ -222,8 +222,8 @@ export function QuestionReviewCard({
                   {rubricBreakdown.map((item) => (
                     <tr key={item.criterionId}>
                       <td>{item.descriptionTh}</td>
-                      <td>{Math.round(item.weight * 100)}%</td>
-                      <td>{item.earned}</td>
+                      <td className="tabular-nums">{Math.round(item.weight * 100)}%</td>
+                      <td className="tabular-nums">{item.earned}</td>
                       <td>
                         {item.passed ? (
                           <span className="badge badge-success">

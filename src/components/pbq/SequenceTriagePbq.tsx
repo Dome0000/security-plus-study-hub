@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, XCircle } from 'lucide-react';
 import type { PbqConfig, PbqResponse } from '../../types';
 import { BilingualPrompt } from '../BilingualPrompt';
 
@@ -99,7 +99,7 @@ export function SequenceTriagePbq({
                 }
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
-                  <span className="badge" style={{ marginTop: '2px', flexShrink: 0 }}>
+                  <span className="badge badge-info tabular-nums" style={{ marginTop: '2px', flexShrink: 0 }}>
                     ลำดับ {idx + 1}
                   </span>
                   <div>
@@ -110,18 +110,20 @@ export function SequenceTriagePbq({
                     />
                     {showExpected && expectedStep && (
                       <div
-                        style={{
-                          marginTop: '4px',
-                          fontSize: 'var(--text-xs)',
-                          fontWeight: 700,
-                          color: isPosCorrect
-                            ? 'var(--status-success-text)'
-                            : 'var(--status-danger-text)'
-                        }}
+                        className={`badge ${isPosCorrect ? 'badge-success' : 'badge-danger'}`}
+                        style={{ marginTop: '6px', whiteSpace: 'normal', borderRadius: 'var(--radius-sm)' }}
                       >
-                        {isPosCorrect
-                          ? '✓ ตำแหน่งถูกต้อง'
-                          : `✗ ลำดับที่ ${idx + 1} ที่ถูกต้องคือ: ${expectedStep.labelEn}`}
+                        {isPosCorrect ? (
+                          <>
+                            <CheckCircle2 size={13} aria-hidden="true" style={{ flexShrink: 0 }} />
+                            <span>ตำแหน่งถูกต้อง</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={13} aria-hidden="true" style={{ flexShrink: 0 }} />
+                            <span>ลำดับที่ {idx + 1} ที่ถูกต้องคือ: {expectedStep.labelEn}</span>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -165,7 +167,7 @@ export function SequenceTriagePbq({
           showThai={showThai}
         />
         <div className="choice-list">
-          {config.triageDecision.choices.map((ch) => {
+          {config.triageDecision.choices.map((ch, chIdx) => {
             const isSelected = currentTriageChoiceId === ch.id;
             const isExpected = ch.id === config.triageDecision.expectedChoiceId;
             let stateClass = isSelected ? 'selected' : '';
@@ -184,22 +186,17 @@ export function SequenceTriagePbq({
                   disabled={disabled}
                   onChange={() => handleTriageSelect(ch.id)}
                 />
-                <div style={{ flex: 1 }}>
+                <span className="choice-letter">{String.fromCharCode(65 + chIdx)}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <BilingualPrompt
                     textEn={ch.textEn}
                     textTh={ch.textTh}
                     showThai={showThai}
                   />
                   {showExpected && isExpected && (
-                    <div
-                      style={{
-                        marginTop: '4px',
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 700,
-                        color: 'var(--status-success-text)'
-                      }}
-                    >
-                      ✓ คำตอบที่ถูกต้อง
+                    <div className="badge badge-success" style={{ marginTop: '6px' }}>
+                      <CheckCircle2 size={13} aria-hidden="true" />
+                      <span>คำตอบที่ถูกต้อง</span>
                     </div>
                   )}
                 </div>

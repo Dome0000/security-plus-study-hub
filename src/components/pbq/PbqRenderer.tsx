@@ -1,4 +1,4 @@
-import { Layers } from 'lucide-react';
+import { Info, Layers } from 'lucide-react';
 import type { PbqQuestion, PbqResponse } from '../../types';
 import { BilingualPrompt } from '../BilingualPrompt';
 import { ArchitectureConfiguratorPbq } from './ArchitectureConfiguratorPbq';
@@ -29,20 +29,22 @@ export function PbqRenderer({
   return (
     <div className="stack-md">
       <div className="card-subtle stack-sm">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="btn-row" style={{ gap: '6px' }}>
           <span className="badge badge-info">
             <Layers size={14} aria-hidden="true" />
             Interactive PBQ
           </span>
-          <span className="badge">{pbq.id}</span>
+          <span className="badge mono">{pbq.id}</span>
         </div>
 
-        <h3 style={{ margin: 0 }}>{pbq.titleEn}</h3>
-        {showThai && (
-          <p className="bilingual-th" style={{ margin: 0, fontWeight: 700 }}>
-            {pbq.titleTh}
-          </p>
-        )}
+        <div>
+          <h3 style={{ margin: 0 }}>{pbq.titleEn}</h3>
+          {showThai && (
+            <p className="bilingual-th" style={{ marginTop: '6px', marginBottom: 0, fontWeight: 700 }}>
+              {pbq.titleTh}
+            </p>
+          )}
+        </div>
 
         <BilingualPrompt
           textEn={pbq.scenarioEn}
@@ -51,19 +53,19 @@ export function PbqRenderer({
         />
 
         <div
-          style={{
-            paddingTop: '8px',
-            borderTop: '1px solid var(--border-subtle)',
-            fontSize: 'var(--text-sm)'
-          }}
+          className="alert alert-info"
+          style={{ padding: '10px 12px', marginTop: '4px' }}
         >
-          <strong>คำชี้แจง (Instructions): </strong>
-          <span>{pbq.instructionsEn}</span>
-          {showThai && (
-            <span style={{ display: 'block', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              {pbq.instructionsTh}
-            </span>
-          )}
+          <Info size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div style={{ fontSize: 'var(--text-sm)' }}>
+            <strong>คำชี้แจง (Instructions): </strong>
+            <span>{pbq.instructionsEn}</span>
+            {showThai && (
+              <span style={{ display: 'block', marginTop: '4px', opacity: 0.92 }}>
+                {pbq.instructionsTh}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

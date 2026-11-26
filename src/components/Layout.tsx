@@ -5,7 +5,6 @@ import {
   Award,
   BookOpen,
   CalendarDays,
-  CheckCircle2,
   ClipboardCheck,
   Info,
   Languages,
@@ -22,15 +21,35 @@ import { useAppContext } from '../context/AppContext';
 import { EXAM_METADATA } from '../data/examMeta';
 import { GlobalSearchModal } from './GlobalSearchModal';
 
-const NAV_ITEMS = [
-  { to: '/', label: 'แดชบอร์ดภาพรวม', icon: LayoutDashboard, end: true },
-  { to: '/curriculum', label: 'หลักสูตรและบทเรียน', icon: BookOpen, end: false },
-  { to: '/practice', label: 'ฝึกทำข้อสอบ', icon: ClipboardCheck, end: false },
-  { to: '/mock-exam', label: 'สอบจำลอง (Mock Exam)', icon: ShieldCheck, end: false },
-  { to: '/results', label: 'ผลสอบและวิเคราะห์จุดอ่อน', icon: Award, end: false },
-  { to: '/glossary', label: 'แฟลชการ์ด & คำศัพท์', icon: Layers, end: false },
-  { to: '/study-plan', label: 'แผนอ่านสอบ 30 วัน', icon: CalendarDays, end: false },
-  { to: '/sources', label: 'แหล่งอ้างอิง & ตั้งค่า', icon: Info, end: false }
+const NAV_GROUPS = [
+  {
+    label: 'ภาพรวม & แผนการเรียน',
+    items: [
+      { to: '/', label: 'แดชบอร์ดภาพรวม', icon: LayoutDashboard, end: true },
+      { to: '/study-plan', label: 'แผนอ่านสอบ 30 วัน', icon: CalendarDays, end: false }
+    ]
+  },
+  {
+    label: 'คลังความรู้',
+    items: [
+      { to: '/curriculum', label: 'หลักสูตรและบทเรียน', icon: BookOpen, end: false },
+      { to: '/glossary', label: 'แฟลชการ์ด & คำศัพท์', icon: Layers, end: false }
+    ]
+  },
+  {
+    label: 'ฝึกสอบ & วัดผล',
+    items: [
+      { to: '/practice', label: 'ฝึกทำข้อสอบ', icon: ClipboardCheck, end: false },
+      { to: '/mock-exam', label: 'สอบจำลอง (Mock Exam)', icon: ShieldCheck, end: false },
+      { to: '/results', label: 'ผลสอบและวิเคราะห์จุดอ่อน', icon: Award, end: false }
+    ]
+  },
+  {
+    label: 'ข้อมูล & ตั้งค่า',
+    items: [
+      { to: '/sources', label: 'แหล่งอ้างอิง & ตั้งค่า', icon: Info, end: false }
+    ]
+  }
 ] as const;
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -85,7 +104,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="sidebar-brand">
           <div>
             <Link to="/" className="sidebar-brand-title">
-              <ShieldCheck size={22} aria-hidden="true" style={{ color: 'var(--accent-primary)' }} />
+              <span className="brand-emblem" aria-hidden="true">
+                <ShieldCheck size={18} />
+              </span>
               <span>Security+ Study Hub</span>
             </Link>
             <span className="sidebar-brand-sub">
@@ -94,7 +115,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
           <button
             type="button"
-            className="btn btn-sm sidebar-close-btn"
+            className="btn btn-sm btn-ghost sidebar-close-btn"
             onClick={() => setDrawerOpen(false)}
             aria-label="ปิดเมนูนำทาง"
           >
@@ -103,27 +124,32 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="sidebar-nav" aria-label="เมนูหลัก">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-              >
-                <Icon size={18} aria-hidden="true" />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="sidebar-group">
+              <div className="sidebar-group-label">{group.label}</div>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  >
+                    <Icon size={18} aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="sidebar-meta">
           <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
             {EXAM_METADATA.examVersion}
           </div>
-          <div style={{ marginTop: '4px' }}>
+          <div style={{ marginTop: '4px' }} className="tabular-nums">
             เปิดสอบถึง: EN {EXAM_METADATA.retirementDateEn} / TH {EXAM_METADATA.retirementDateTh}
           </div>
         </div>
@@ -145,13 +171,11 @@ export function Layout({ children }: { children: ReactNode }) {
             </button>
 
             <span className="exam-status-pill">
-              <CheckCircle2 size={14} aria-hidden="true" />
-              <span>
-                {EXAM_METADATA.examCode} Active
-              </span>
+              <span className="status-dot" aria-hidden="true" />
+              <span>{EXAM_METADATA.examCode} Active</span>
             </span>
 
-            <span className="header-verified-note">
+            <span className="header-verified-note tabular-nums">
               ตรวจทานล่าสุด: {EXAM_METADATA.verifiedDate}
             </span>
           </div>
@@ -159,15 +183,13 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="header-right">
             <button
               type="button"
-              className="btn btn-sm"
+              className="btn btn-sm header-search-btn"
               onClick={openSearch}
               aria-label="ค้นหาบทเรียน คำศัพท์ และ Objective (Ctrl+K)"
             >
-              <Search size={16} aria-hidden="true" />
+              <Search size={15} aria-hidden="true" />
               <span>ค้นหา</span>
-              <span className="badge" style={{ padding: '1px 6px' }}>
-                Ctrl+K
-              </span>
+              <kbd className="kbd-chip">Ctrl+K</kbd>
             </button>
 
             <button
@@ -226,7 +248,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <p style={{ margin: 0 }}>{EXAM_METADATA.disclaimerTh}</p>
             <div className="app-footer-links">
               <span>ขอบเขต: {EXAM_METADATA.examCode} ({EXAM_METADATA.examVersion})</span>
-              <span>•</span>
+              <span aria-hidden="true">•</span>
               <Link to="/sources">แหล่งอ้างอิง ข้อจำกัด และสำรองข้อมูล JSON</Link>
             </div>
           </div>

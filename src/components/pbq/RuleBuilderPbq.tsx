@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import type { PbqConfig, PbqResponse } from '../../types';
 import { BilingualPrompt } from '../BilingualPrompt';
 
@@ -58,18 +59,21 @@ export function RuleBuilderPbq({
             {config.contextRows.map((row) => (
               <tr key={row.label}>
                 <td style={{ fontWeight: 700 }}>{row.label}</td>
-                <td className="mono">{row.value}</td>
+                <td className="mono tabular-nums">{row.value}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {config.rules.map((rule) => {
+      {config.rules.map((rule, ruleIdx) => {
         const ruleValues = currentRules[rule.id] ?? {};
         return (
           <fieldset key={rule.id} className="pbq-fieldset stack-sm">
-            <legend>{rule.titleEn}</legend>
+            <legend style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span className="badge badge-info tabular-nums">#{ruleIdx + 1}</span>
+              <span>{rule.titleEn}</span>
+            </legend>
             {showThai && (
               <p className="bilingual-th" style={{ margin: 0, fontSize: 'var(--text-sm)' }}>
                 {rule.titleTh}
@@ -111,15 +115,20 @@ export function RuleBuilderPbq({
                     </select>
                     {showExpected && expectedChoice && (
                       <span
-                        style={{
-                          fontSize: 'var(--text-xs)',
-                          fontWeight: 700,
-                          color: isMatch
-                            ? 'var(--status-success-text)'
-                            : 'var(--status-danger-text)'
-                        }}
+                        className={`badge ${isMatch ? 'badge-success' : 'badge-danger'}`}
+                        style={{ whiteSpace: 'normal', borderRadius: 'var(--radius-sm)' }}
                       >
-                        {isMatch ? '✓ ถูกต้อง' : `✗ เฉลย: ${expectedChoice.labelEn}`}
+                        {isMatch ? (
+                          <>
+                            <CheckCircle2 size={13} aria-hidden="true" style={{ flexShrink: 0 }} />
+                            <span>ถูกต้อง</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={13} aria-hidden="true" style={{ flexShrink: 0 }} />
+                            <span>เฉลย: {expectedChoice.labelEn}</span>
+                          </>
+                        )}
                       </span>
                     )}
                   </div>

@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import type { PbqConfig, PbqResponse } from '../../types';
 import { BilingualPrompt } from '../BilingualPrompt';
 
@@ -51,11 +52,27 @@ export function MatchingMatrixPbq({
         const isCorrect = expectedId !== undefined && selectedVal === expectedId;
 
         return (
-          <div key={row.id} className="card-subtle stack-sm">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div
+            key={row.id}
+            className="card-subtle stack-sm"
+            style={
+              showExpected
+                ? {
+                    borderColor: isCorrect
+                      ? 'var(--status-success-border)'
+                      : 'var(--status-danger-border)'
+                  }
+                : undefined
+            }
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '14px', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 280px' }}>
-                <label htmlFor={selectId} className="field-label" style={{ display: 'block', marginBottom: '4px' }}>
-                  รายการที่ {idx + 1}
+                <label
+                  htmlFor={selectId}
+                  className="field-label"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}
+                >
+                  <span className="badge badge-info tabular-nums">รายการที่ {idx + 1}</span>
                 </label>
                 <BilingualPrompt
                   textEn={row.promptEn}
@@ -84,16 +101,25 @@ export function MatchingMatrixPbq({
 
                 {showExpected && expectedOpt && (
                   <div
-                    style={{
-                      marginTop: '6px',
-                      fontSize: 'var(--text-xs)',
-                      fontWeight: 700,
-                      color: isCorrect ? 'var(--status-success-text)' : 'var(--status-danger-text)'
-                    }}
+                    className={`badge ${isCorrect ? 'badge-success' : 'badge-danger'}`}
+                    style={{ marginTop: '8px', whiteSpace: 'normal', borderRadius: 'var(--radius-sm)' }}
                   >
-                    {isCorrect
-                      ? '✓ ถูกต้อง'
-                      : `✗ เฉลย: ${expectedOpt.labelEn}${showThai && expectedOpt.labelTh !== expectedOpt.labelEn ? ` (${expectedOpt.labelTh})` : ''}`}
+                    {isCorrect ? (
+                      <>
+                        <CheckCircle2 size={14} aria-hidden="true" style={{ flexShrink: 0 }} />
+                        <span>ถูกต้อง</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />
+                        <span>
+                          เฉลย: {expectedOpt.labelEn}
+                          {showThai && expectedOpt.labelTh !== expectedOpt.labelEn
+                            ? ` (${expectedOpt.labelTh})`
+                            : ''}
+                        </span>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

@@ -15,6 +15,9 @@
     "validate:content": "tsx scripts/validate-content.ts"
   },
   "dependencies": {
+    "@fontsource/ibm-plex-sans-thai": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

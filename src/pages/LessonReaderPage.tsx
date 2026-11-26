@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Printer,
   RotateCcw,
+  ShieldAlert,
   XCircle
 } from 'lucide-react';
 import { DomainBadge } from '../components/DomainBadge';
@@ -38,15 +39,38 @@ export function LessonReaderPage() {
     Record<string, LessonKnowledgeCheckChoice['id']>
   >({});
   const [kcChecked, setKcChecked] = useState<Record<string, boolean>>({});
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [activeSectionId, setActiveSectionId] = useState<string>('sec-objectives');
 
   useEffect(() => {
     if (lesson) {
       setLastLesson(lesson.id);
       setKcSelected({});
       setKcChecked({});
+      setActiveSectionId('sec-objectives');
+      setScrollProgress(0);
       window.scrollTo({ top: 0 });
     }
   }, [lesson, setLastLesson]);
+
+  // Sticky reading progress bar driven by window scroll listener
+  useEffect(() => {
+    if (!lesson) return;
+    const updateProgress = () => {
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY || doc.scrollTop;
+      const maxScroll = doc.scrollHeight - window.innerHeight;
+      const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100)) : 0;
+      setScrollProgress(pct);
+    };
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+    };
+  }, [lesson]);
 
   const sortedLessons = useMemo(() => {
     const list = [...(bundle?.lessons ?? [])];
@@ -65,7 +89,67 @@ export function LessonReaderPage() {
     };
   }, [lesson, sortedLessons]);
 
+  const tocItems = useMemo(() => {
+    if (!lesson) return [];
+    return [
+      { id: 'sec-objectives', label: '1. วัตถุประสงค์ & Objectives' },
+      { id: 'sec-prereq', label: '2. ความรู้พื้นฐาน (Prerequisites)' },
+      ...lesson.sections.map((s, idx) => ({
+        id: `sec-content-${s.id}`,
+        label: `3.${idx + 1} ${s.titleTh}`
+      })),
+      { id: 'sec-keyterms', label: '4. คำศัพท์สำคัญ (Key Terms)' },
+      { id: 'sec-scenarios', label: '5. สถานการณ์ตัวอย่าง' },
+      { id: 'sec-tables', label: '6. ตารางเปรียบเทียบ' },
+      { id: 'sec-apps', label: '7. การประยุกต์ใช้และข้อจำกัด' },
+      { id: 'sec-misconceptions', label: '8. ความเข้าใจผิดที่พบบ่อย' },
+      { id: 'sec-guide', label: '9. แนวทางวิเคราะห์โจทย์' },
+      { id: 'sec-summary', label: '10. สรุปท้ายบทเรียน' },
+      { id: 'sec-kc', label: '11. แบบทดสอบความเข้าใจ' },
+      { id: 'sec-refs', label: '12. อ้างอิง & บทเรียนที่เกี่ยวข้อง' }
+    ];
+  }, [lesson]);
+
+  // Scroll-Spy via IntersectionObserver tracking visible lesson-section-anchor IDs
+  useEffect(() => {
+    if (!lesson || typeof IntersectionObserver === 'undefined') return;
+    const anchors = Array.from(document.querySelectorAll<HTMLElement>('.lesson-section-anchor'));
+    if (anchors.length === 0) return;
+
+    const visibleIds = new Set<string>();
+    const orderedIds = tocItems.map((item) => item.id);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visibleIds.add(entry.target.id);
+          } else {
+            visibleIds.delete(entry.target.id);
+          }
+        }
+        const firstVisible = orderedIds.find((id) => visibleIds.has(id));
+        if (firstVisible) {
+          setActiveSectionId(firstVisible);
+        }
+      },
+      {
+        rootMargin: '-80px 0px -55% 0px',
+        threshold: [0, 0.1, 0.25]
+      }
+    );
+
+    for (const el of anchors) {
+      observer.observe(el);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [lesson, tocItems]);
+
   const scrollToSection = (sectionDomId: string) => {
+    setActiveSectionId(sectionDomId);
     const el = document.getElementById(sectionDomId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -96,28 +180,15 @@ export function LessonReaderPage() {
   const isCompleted = progress.completedLessonIds.includes(lesson.id);
   const isBookmarked = progress.bookmarkedLessonIds.includes(lesson.id);
 
-  const tocItems = [
-    { id: 'sec-objectives', label: '1. วัตถุประสงค์ & Objectives' },
-    { id: 'sec-prereq', label: '2. ความรู้พื้นฐาน (Prerequisites)' },
-    ...lesson.sections.map((s, idx) => ({
-      id: `sec-content-${s.id}`,
-      label: `3.${idx + 1} ${s.titleTh}`
-    })),
-    { id: 'sec-keyterms', label: '4. คำศัพท์สำคัญ (Key Terms)' },
-    { id: 'sec-scenarios', label: '5. สถานการณ์ตัวอย่าง' },
-    { id: 'sec-tables', label: '6. ตารางเปรียบเทียบ' },
-    { id: 'sec-apps', label: '7. การประยุกต์ใช้และข้อจำกัด' },
-    { id: 'sec-misconceptions', label: '8. ความเข้าใจผิดที่พบบ่อย' },
-    { id: 'sec-guide', label: '9. แนวทางวิเคราะห์โจทย์' },
-    { id: 'sec-summary', label: '10. สรุปท้ายบทเรียน' },
-    { id: 'sec-kc', label: '11. แบบทดสอบความเข้าใจ' },
-    { id: 'sec-refs', label: '12. อ้างอิง & บทเรียนที่เกี่ยวข้อง' }
-  ];
-
   return (
     <div className="stack-lg">
-      {/* Header & Controls */}
-      <div className="card stack-md">
+      {/* Sticky Reading Progress Bar */}
+      <div className="reading-progress-bar no-print" aria-hidden="true">
+        <div className="reading-progress-fill" style={{ width: `${scrollProgress}%` }} />
+      </div>
+
+      {/* Lesson Hero Header & Controls */}
+      <header className="lesson-hero stack-md" data-domain={lesson.domainId}>
         <div className="btn-row no-print" style={{ justifyContent: 'space-between' }}>
           <Link to="/curriculum" className="btn btn-sm">
             <ArrowLeft size={15} aria-hidden="true" />
@@ -166,9 +237,9 @@ export function LessonReaderPage() {
 
         <div className="stack-sm">
           <div className="btn-row">
-            <span className="badge">{lesson.id}</span>
+            <span className="badge mono tabular-nums">{lesson.id}</span>
             <DomainBadge domainId={lesson.domainId} objectiveIds={lesson.objectiveIds} />
-            <span className="badge">
+            <span className="badge tabular-nums">
               <Clock size={13} aria-hidden="true" />
               ใช้เวลาอ่านประมาณ {lesson.estimatedMinutes} นาที
             </span>
@@ -178,7 +249,7 @@ export function LessonReaderPage() {
             {lesson.titleEn}
           </p>
         </div>
-      </div>
+      </header>
 
       {/* Main Content + Sticky TOC */}
       <div className="lesson-layout">
@@ -202,7 +273,7 @@ export function LessonReaderPage() {
                 const obj = objectivesById.get(oid);
                 return (
                   <div key={oid} style={{ fontSize: 'var(--text-sm)' }}>
-                    <span className="badge" style={{ marginRight: '8px' }}>
+                    <span className="badge tabular-nums" style={{ marginRight: '8px' }}>
                       {oid}
                     </span>
                     {obj ? (
@@ -262,9 +333,13 @@ export function LessonReaderPage() {
             <div className="grid-2">
               {lesson.keyTerms.map((term) => (
                 <div key={term.termEn} className="card-subtle stack-sm">
-                  <div style={{ fontWeight: 800, color: 'var(--accent-primary)' }}>
-                    {term.termEn}
-                    {term.acronym ? ` (${term.acronym})` : ''}
+                  <div className="btn-row" style={{ justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 800, color: 'var(--accent-primary)' }}>
+                      {term.termEn}
+                    </span>
+                    {term.acronym && (
+                      <span className="badge badge-info mono">{term.acronym}</span>
+                    )}
                   </div>
                   <p className="prose-text" style={{ margin: 0, fontSize: 'var(--text-sm)' }}>
                     {term.explanationTh}
@@ -278,24 +353,45 @@ export function LessonReaderPage() {
           <section id="sec-scenarios" className="card stack-md lesson-section-anchor">
             <h2>สถานการณ์จำลองจริง (Realistic Scenarios)</h2>
             <div className="stack-md">
-              {lesson.scenarios.map((sc) => (
-                <div key={sc.titleTh} className="card-subtle stack-sm">
-                  <h3 style={{ margin: 0 }}>{sc.titleTh}</h3>
-                  <div className="prose-text">
-                    <p>
-                      <strong>บริบทสถานการณ์: </strong>
+              {lesson.scenarios.map((sc, sIdx) => (
+                <article key={sc.titleTh} className="scenario-card stack-sm">
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}
+                  >
+                    <h3 style={{ margin: 0 }}>{sc.titleTh}</h3>
+                    <span className="badge tabular-nums">Scenario {sIdx + 1}</span>
+                  </div>
+                  <div className="scenario-step">
+                    <strong style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                      บริบทสถานการณ์
+                    </strong>
+                    <p className="prose-text" style={{ margin: '4px 0 0' }}>
                       {sc.contextTh}
                     </p>
-                    <p>
-                      <strong>การตัดสินใจที่เหมาะสม: </strong>
+                  </div>
+                  <div className="scenario-step">
+                    <strong style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                      การตัดสินใจที่เหมาะสม
+                    </strong>
+                    <p className="prose-text" style={{ margin: '4px 0 0' }}>
                       {sc.decisionTh}
                     </p>
-                    <p style={{ marginBottom: 0 }}>
-                      <strong>ข้อคิดสำคัญสำหรับข้อสอบ: </strong>
+                  </div>
+                  <div className="scenario-step">
+                    <strong style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                      ข้อคิดสำคัญสำหรับข้อสอบ
+                    </strong>
+                    <p className="prose-text" style={{ margin: '4px 0 0' }}>
                       {sc.takeawayTh}
                     </p>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </section>
@@ -336,10 +432,17 @@ export function LessonReaderPage() {
           <section id="sec-apps" className="card stack-md lesson-section-anchor">
             <h2>การประยุกต์ใช้จริงและข้อจำกัด (Applications & Limitations)</h2>
             <div className="grid-2">
-              <div className="card-subtle stack-sm">
-                <h3 style={{ margin: 0, color: 'var(--status-success-text)' }}>
-                  การนำไปประยุกต์ใช้จริง
-                </h3>
+              <div className="comparison-card-pro stack-sm">
+                <div className="btn-row">
+                  <CheckCircle2
+                    size={18}
+                    aria-hidden="true"
+                    style={{ color: 'var(--status-success-text)' }}
+                  />
+                  <h3 style={{ margin: 0, color: 'var(--status-success-text)' }}>
+                    การนำไปประยุกต์ใช้จริง
+                  </h3>
+                </div>
                 <ul className="prose-text" style={{ margin: 0, paddingLeft: '20px' }}>
                   {lesson.applicationsAndLimitations.applicationsTh.map((app) => (
                     <li key={app} style={{ marginBottom: '6px' }}>
@@ -348,10 +451,17 @@ export function LessonReaderPage() {
                   ))}
                 </ul>
               </div>
-              <div className="card-subtle stack-sm">
-                <h3 style={{ margin: 0, color: 'var(--status-warning-text)' }}>
-                  ข้อจำกัดและข้อควรระวัง
-                </h3>
+              <div className="comparison-card-con stack-sm">
+                <div className="btn-row">
+                  <ShieldAlert
+                    size={18}
+                    aria-hidden="true"
+                    style={{ color: 'var(--status-warning-text)' }}
+                  />
+                  <h3 style={{ margin: 0, color: 'var(--status-warning-text)' }}>
+                    ข้อจำกัดและข้อควรระวัง
+                  </h3>
+                </div>
                 <ul className="prose-text" style={{ margin: 0, paddingLeft: '20px' }}>
                   {lesson.applicationsAndLimitations.limitationsTh.map((lim) => (
                     <li key={lim} style={{ marginBottom: '6px' }}>
@@ -438,7 +548,7 @@ export function LessonReaderPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <HelpCircle size={20} aria-hidden="true" style={{ color: 'var(--accent-primary)' }} />
               <h2 style={{ margin: 0 }}>
-                แบบทดสอบความเข้าใจท้ายบท ({lesson.knowledgeChecks.length} ข้อ)
+                แบบทดสอบความเข้าใจท้ายบท (<span className="tabular-nums">{lesson.knowledgeChecks.length}</span> ข้อ)
               </h2>
             </div>
 
@@ -450,7 +560,7 @@ export function LessonReaderPage() {
 
                 return (
                   <fieldset key={kc.id} className="pbq-fieldset stack-sm">
-                    <legend>คำถามทบทวนที่ {idx + 1}</legend>
+                    <legend className="tabular-nums">คำถามทบทวนที่ {idx + 1}</legend>
                     <p className="prose-text" style={{ margin: 0, fontWeight: 700 }}>
                       {kc.questionTh}
                     </p>
@@ -477,10 +587,10 @@ export function LessonReaderPage() {
                                 setKcSelected((prev) => ({ ...prev, [kc.id]: ch.id }))
                               }
                             />
-                            <span style={{ flex: 1 }}>
-                              <strong style={{ marginRight: '6px' }}>{ch.id.toUpperCase()}.</strong>
-                              {ch.textTh}
+                            <span className="choice-letter" aria-hidden="true">
+                              {ch.id.toUpperCase()}
                             </span>
+                            <span style={{ flex: 1 }}>{ch.textTh}</span>
                           </label>
                         );
                       })}
@@ -606,17 +716,21 @@ export function LessonReaderPage() {
         <nav className="lesson-toc no-print" aria-label="สารบัญบทเรียน">
           <h2 style={{ fontSize: 'var(--text-sm)', margin: 0 }}>สารบัญบทเรียน</h2>
           <ul className="lesson-toc-list">
-            {tocItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className="lesson-toc-btn"
-                  onClick={() => scrollToSection(item.id)}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ))}
+            {tocItems.map((item) => {
+              const isActive = activeSectionId === item.id;
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className={`lesson-toc-btn ${isActive ? 'active' : ''}`}
+                    aria-current={isActive ? 'location' : undefined}
+                    onClick={() => scrollToSection(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>

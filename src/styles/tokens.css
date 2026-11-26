@@ -1,10 +1,11 @@
 /* Design tokens for Security+ Study Hub (SY0-701)
+   Modern Cybersecurity Academy — Deep Navy / Electric Indigo & Cyan
    WCAG 2.2 AA contrast targets, Light & Dark theme variables, Thai-friendly typography */
 
 :root {
   /* Typography */
-  --font-sans: 'Noto Sans Thai', 'Sarabun', 'Leelawadee UI', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Courier New', monospace;
+  --font-sans: 'Plus Jakarta Sans', 'IBM Plex Sans Thai', 'Noto Sans Thai', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
 
   --text-xs: 0.78rem;
   --text-sm: 0.875rem;
@@ -14,15 +15,16 @@
   --text-2xl: 1.5rem;
   --text-3xl: 1.875rem;
 
-  --leading-tight: 1.35;
+  --leading-tight: 1.32;
   --leading-normal: 1.6;
   --leading-prose: 1.78;
 
   /* Light Theme Palette */
-  --bg-canvas: #f3f6fa;
+  --bg-canvas: #f4f7fb;
   --bg-surface: #ffffff;
-  --bg-subtle: #eaf0f6;
+  --bg-subtle: #edf2f8;
   --bg-elevated: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.84);
   --bg-code: #0f172a;
   --text-code: #e2e8f0;
 
@@ -30,14 +32,17 @@
   --text-secondary: #334155;
   --text-muted: #475569;
 
-  --border-subtle: #cbd5e1;
-  --border-strong: #94a3b8;
+  --border-subtle: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.22);
 
-  --accent-primary: #0f4c81;
-  --accent-primary-hover: #0a3861;
+  --accent-primary: #1d4ed8;
+  --accent-primary-hover: #1e40af;
+  --accent-secondary: #0891b2;
   --accent-on-primary: #ffffff;
-  --accent-soft: #e0ecf8;
-  --accent-soft-text: #0a3861;
+  --accent-soft: #eff6ff;
+  --accent-soft-text: #1e3a8a;
+  --accent-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+  --hero-bg: linear-gradient(135deg, #0b1630 0%, #132854 55%, #0c3b5e 100%);
 
   --focus-ring: #0284c7;
 
@@ -59,22 +64,27 @@
   --status-info-text: #1e40af;
 
   /* Domain Colors */
-  --d1-bg: #e0ecf8;
-  --d1-text: #0a3861;
+  --d1-accent: #2563eb;
+  --d1-bg: #e0ecff;
+  --d1-text: #1e3a8a;
   --d1-border: #93c5fd;
 
+  --d2-accent: #ea580c;
   --d2-bg: #ffedd5;
   --d2-text: #9a3412;
   --d2-border: #fdba74;
 
+  --d3-accent: #0d9488;
   --d3-bg: #ccfbf1;
   --d3-text: #115e59;
   --d3-border: #5eead4;
 
+  --d4-accent: #4f46e5;
   --d4-bg: #e0e7ff;
   --d4-text: #3730a3;
   --d4-border: #a5b4fc;
 
+  --d5-accent: #9333ea;
   --d5-bg: #f3e8ff;
   --d5-text: #6b21a8;
   --d5-border: #d8b4fe;
@@ -85,33 +95,39 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 14px 32px rgba(15, 23, 42, 0.16);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 14px 34px rgba(15, 23, 42, 0.14), 0 4px 10px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover: 0 10px 26px rgba(15, 23, 42, 0.1), 0 3px 8px rgba(29, 78, 216, 0.08);
+  --shadow-accent: 0 6px 18px rgba(29, 78, 216, 0.26);
 
-  --transition-fast: 140ms ease;
+  --transition-fast: 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html[data-theme='dark'] {
-  --bg-canvas: #0b1120;
-  --bg-surface: #111827;
-  --bg-subtle: #1e293b;
-  --bg-elevated: #172033;
-  --bg-code: #060b14;
+  --bg-canvas: #070d19;
+  --bg-surface: #0f172a;
+  --bg-subtle: #162236;
+  --bg-elevated: #141f35;
+  --bg-glass: rgba(11, 17, 32, 0.84);
+  --bg-code: #050912;
   --text-code: #e2e8f0;
 
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
 
-  --border-subtle: #334155;
-  --border-strong: #475569;
+  --border-subtle: rgba(148, 163, 184, 0.16);
+  --border-strong: rgba(148, 163, 184, 0.34);
 
   --accent-primary: #38bdf8;
   --accent-primary-hover: #7dd3fc;
-  --accent-on-primary: #082f49;
-  --accent-soft: #0c2d48;
+  --accent-secondary: #22d3ee;
+  --accent-on-primary: #041424;
+  --accent-soft: rgba(56, 189, 248, 0.14);
   --accent-soft-text: #bae6fd;
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+  --hero-bg: linear-gradient(135deg, #0b1326 0%, #112247 55%, #0a324d 100%);
 
   --focus-ring: #7dd3fc;
 
@@ -151,9 +167,11 @@ html[data-theme='dark'] {
   --d5-text: #e9d5ff;
   --d5-border: #7e22ce;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.65);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.48), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.68);
+  --shadow-card-hover: 0 12px 28px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.22);
+  --shadow-accent: 0 6px 20px rgba(6, 182, 212, 0.28);
 }
 
 html[data-font-size='large'] {

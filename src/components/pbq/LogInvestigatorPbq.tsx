@@ -1,4 +1,5 @@
 import { useId, useRef, useState } from 'react';
+import { CheckCircle2, FileTerminal, XCircle } from 'lucide-react';
 import type { PbqConfig, PbqResponse } from '../../types';
 import { BilingualPrompt } from '../BilingualPrompt';
 
@@ -83,6 +84,7 @@ export function LogInvestigatorPbq({
                   }
                 }}
               >
+                <FileTerminal size={13} aria-hidden="true" style={{ marginRight: '5px', verticalAlign: '-2px' }} />
                 {tab.title}
               </button>
             );
@@ -95,13 +97,28 @@ export function LogInvestigatorPbq({
             role="tabpanel"
             aria-labelledby={`${baseId}-tab-${activeTab.id}`}
           >
-            <pre className="log-console">
-              <code>
-                {activeTab.lines
-                  .map((line, i) => `${String(i + 1).padStart(2, '0')} | ${line}`)
-                  .join('\n')}
-              </code>
-            </pre>
+            <div className="soc-terminal">
+              <div className="soc-terminal-bar">
+                <div className="soc-terminal-dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <span className="mono" style={{ fontSize: 'var(--text-xs)', fontWeight: 600 }}>
+                  {activeTab.title}
+                </span>
+                <span className="mono tabular-nums" style={{ fontSize: 'var(--text-xs)', opacity: 0.72, marginLeft: 'auto' }}>
+                  {activeTab.lines.length} lines
+                </span>
+              </div>
+              <pre className="log-console">
+                <code>
+                  {activeTab.lines
+                    .map((line, i) => `${String(i + 1).padStart(2, '0')} | ${line}`)
+                    .join('\n')}
+                </code>
+              </pre>
+            </div>
           </div>
         )}
       </div>
@@ -112,14 +129,16 @@ export function LogInvestigatorPbq({
 
         return (
           <fieldset key={finding.id} className="pbq-fieldset stack-sm">
-            <legend>ข้อค้นพบที่ {idx + 1}</legend>
+            <legend style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span className="badge badge-info tabular-nums">ข้อค้นพบที่ {idx + 1}</span>
+            </legend>
             <BilingualPrompt
               textEn={finding.promptEn}
               textTh={finding.promptTh}
               showThai={showThai}
             />
             <div className="choice-list">
-              {finding.choices.map((ch) => {
+              {finding.choices.map((ch, chIdx) => {
                 const isSelected = pickedChoice === ch.id;
                 const isExpected = ch.id === finding.expectedChoiceId;
                 let stateClass = isSelected ? 'selected' : '';
@@ -138,22 +157,17 @@ export function LogInvestigatorPbq({
                       disabled={disabled}
                       onChange={() => handleFindingChange(finding.id, ch.id)}
                     />
-                    <div style={{ flex: 1 }}>
+                    <span className="choice-letter">{String.fromCharCode(65 + chIdx)}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <BilingualPrompt
                         textEn={ch.textEn}
                         textTh={ch.textTh}
                         showThai={showThai}
                       />
                       {showExpected && isExpected && (
-                        <div
-                          style={{
-                            marginTop: '4px',
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 700,
-                            color: 'var(--status-success-text)'
-                          }}
-                        >
-                          ✓ คำตอบที่ถูกต้อง
+                        <div className="badge badge-success" style={{ marginTop: '6px' }}>
+                          <CheckCircle2 size={13} aria-hidden="true" />
+                          <span>คำตอบที่ถูกต้อง</span>
                         </div>
                       )}
                     </div>
@@ -162,14 +176,18 @@ export function LogInvestigatorPbq({
               })}
             </div>
             {showExpected && (
-              <div
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 700,
-                  color: isCorrect ? 'var(--status-success-text)' : 'var(--status-danger-text)'
-                }}
-              >
-                สถานะข้อค้นพบนี้: {isCorrect ? 'ถูกต้อง' : 'ยังไม่ถูกต้อง'}
+              <div className={`badge ${isCorrect ? 'badge-success' : 'badge-danger'}`}>
+                {isCorrect ? (
+                  <>
+                    <CheckCircle2 size={14} aria-hidden="true" />
+                    <span>สถานะข้อค้นพบนี้: ถูกต้อง</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle size={14} aria-hidden="true" />
+                    <span>สถานะข้อค้นพบนี้: ยังไม่ถูกต้อง</span>
+                  </>
+                )}
               </div>
             )}
           </fieldset>

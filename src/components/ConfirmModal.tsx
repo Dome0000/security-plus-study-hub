@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ShieldCheck } from 'lucide-react';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -55,6 +55,8 @@ export function ConfirmModal({
 
   if (!open) return null;
 
+  const isDanger = tone === 'danger';
+
   return (
     <div
       className="modal-overlay"
@@ -72,35 +74,55 @@ export function ConfirmModal({
         aria-labelledby={titleId}
         aria-describedby={descId}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {tone === 'danger' && (
-            <AlertTriangle
-              size={22}
-              aria-hidden="true"
-              style={{ color: 'var(--status-danger-text)', flexShrink: 0 }}
-            />
-          )}
-          <h2 id={titleId} style={{ margin: 0 }}>
-            {title}
-          </h2>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+          <span
+            aria-hidden="true"
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '999px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              backgroundColor: isDanger ? 'var(--status-danger-bg)' : 'var(--accent-soft)',
+              border: `1px solid ${isDanger ? 'var(--status-danger-border)' : 'var(--d1-border)'}`,
+              color: isDanger ? 'var(--status-danger-text)' : 'var(--accent-primary)'
+            }}
+          >
+            {isDanger ? <AlertTriangle size={22} /> : <ShieldCheck size={22} />}
+          </span>
+
+          <div className="stack-sm" style={{ gap: '6px', flex: 1, minWidth: 0 }}>
+            <h2 id={titleId} style={{ margin: 0, fontSize: 'var(--text-lg)' }}>
+              {title}
+            </h2>
+            <p id={descId} style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
+              {description}
+            </p>
+          </div>
         </div>
 
-        <p id={descId} style={{ margin: 0, color: 'var(--text-secondary)' }}>
-          {description}
-        </p>
-
-        <div className="btn-row" style={{ justifyContent: 'flex-end', marginTop: '8px' }}>
+        <div
+          className="btn-row"
+          style={{
+            justifyContent: 'flex-end',
+            marginTop: '6px',
+            paddingTop: '12px',
+            borderTop: '1px solid var(--border-subtle)'
+          }}
+        >
           <button
             ref={cancelBtnRef}
             type="button"
-            className="btn"
+            className="btn btn-ghost"
             onClick={onCancel}
           >
             {cancelLabel}
           </button>
           <button
             type="button"
-            className={`btn ${tone === 'danger' ? 'btn-danger' : 'btn-primary'}`}
+            className={`btn ${isDanger ? 'btn-danger' : 'btn-primary'}`}
             onClick={onConfirm}
           >
             {confirmLabel}
